@@ -101,15 +101,15 @@ Run SQL*Plus with SYSDBA privileges:
 ```powershell
 sqlplus "/ as sysdba" @"setup_user.sql"
 ```
-*Switches to container `XEPDB1`, creates `pharmacy_user` with password `PharmacyPass123`, and grants appropriate privileges.*
+*Switches to container `XEPDB1`, creates `pharmacy_user` with password `YOUR_DB_PASSWORD`, and grants appropriate privileges.*
 
 #### 2.3 Execute Schema & Seed Data
 ```powershell
 # 1. Create tables, constraints, indexes, views, and audit triggers
-sqlplus pharmacy_user/PharmacyPass123@localhost:1521/xepdb1 @"schema.sql"
+sqlplus pharmacy_user/YOUR_DB_PASSWORD@localhost:1521/xepdb1 @"schema.sql"
 
 # 2. Insert realistic clinical seed records
-sqlplus pharmacy_user/PharmacyPass123@localhost:1521/xepdb1 @"seed_data.sql"
+sqlplus pharmacy_user/YOUR_DB_PASSWORD@localhost:1521/xepdb1 @"seed_data.sql"
 ```
 
 #### 2.4 Initialize Staff Accounts
@@ -224,7 +224,7 @@ The accompanying `pat_queries.sql` script provides 15 structured sections demons
 
 Execute via SQL*Plus:
 ```powershell
-sqlplus pharmacy_user/PharmacyPass123@localhost:1521/xepdb1 @"pat_queries.sql"
+sqlplus pharmacy_user/YOUR_DB_PASSWORD@localhost:1521/xepdb1 @"pat_queries.sql"
 ```
 
 ---
