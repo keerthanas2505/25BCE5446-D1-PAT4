@@ -1,0 +1,110 @@
+{% extends "base_public.html" %}
+
+{% block title %}Prescription Guide & Medication Safety - RxCare{% endblock %}
+
+{% block content %}
+<section class="page-header-banner">
+  <div class="banner-container">
+    <span class="banner-kicker">Patient Education & Guidance</span>
+    <h1>Prescription Guide & Safe Medication Use</h1>
+    <p>Empowering patients and caregivers with clear knowledge on understanding prescriptions, proper administration, and medication safety.</p>
+  </div>
+</section>
+
+<section class="public-section">
+  <div class="section-container">
+    <div class="guide-grid">
+
+      <!-- Guide 1: Understanding Your Prescription -->
+      <div class="guide-card">
+        <div class="guide-header">
+          <div class="guide-icon">&#128220;</div>
+          <h3>Understanding Your Prescription (Rx)</h3>
+        </div>
+        <p>A medical prescription is a formal clinical order written by a licensed healthcare professional. Understanding its components ensures you receive and take the right medication.</p>
+        <ul class="guide-list">
+          <li><strong>Rx Symbol:</strong> Derived from the Latin <em>recipe</em> ("take thou"). Signifies the start of the therapeutic instruction.</li>
+          <li><strong>Medication & Strength:</strong> Indicates the active chemical agent and the milligram (mg) or milliliter (ml) strength per unit dose.</li>
+          <li><strong>Frequency Abbreviations:</strong> Common medical notations:
+            <ul>
+              <li><code>OD</code>: Once daily</li>
+              <li><code>BD / BID</code>: Twice daily (every 12 hours)</li>
+              <li><code>TDS / TID</code>: Three times daily (every 8 hours)</li>
+              <li><code>QID</code>: Four times daily (every 6 hours)</li>
+              <li><code>SOS / PRN</code>: Take only as needed for symptoms</li>
+            </ul>
+          </li>
+          <li><strong>Relation to Meals:</strong> <code>AC</code> means before food; <code>PC</code> means after food.</li>
+        </ul>
+      </div>
+
+      <!-- Guide 2: Safe Storage Guidelines -->
+      <div class="guide-card">
+        <div class="guide-header">
+          <div class="guide-icon">&#127777;</div>
+          <h3>Safe Storage & Environmental Factors</h3>
+        </div>
+        <p>Improper temperature and moisture degrade pharmaceutical stability and reduce medication effectiveness.</p>
+        <ul class="guide-list">
+          <li><strong>Cool & Dry Place:</strong> Store oral tablets and capsules away from direct sunlight, excess heat, and bathroom moisture. Keep under 25°C.</li>
+          <li><strong>Refrigeration (2°C – 8°C):</strong> Insulin pens, unopened vaccines, and certain eye drops must be kept in the main compartment of your refrigerator. Never freeze medicines.</li>
+          <li><strong>Keep Out of Reach of Children:</strong> Always store medicines in secure cabinets with child-resistant caps firmly tightened.</li>
+          <li><strong>Original Packaging:</strong> Retain medicines in their original blister packs or bottles to protect from moisture and preserve expiry batch details.</li>
+        </ul>
+      </div>
+
+      <!-- Guide 3: Antibiotic Stewardship -->
+      <div class="guide-card">
+        <div class="guide-header">
+          <div class="guide-icon">&#9877;</div>
+          <h3>Responsible Antibiotic Stewardship</h3>
+        </div>
+        <p>Antibiotics treat bacterial infections, not viral illnesses like common colds or influenza.</p>
+        <ul class="guide-list">
+          <li><strong>Finish the Full Prescribed Course:</strong> Even if your symptoms improve after two or three days, stopping early allows surviving bacteria to develop resistance.</li>
+          <li><strong>Never Share Antibiotics:</strong> Never use leftover antibiotics prescribed for someone else or a previous illness.</li>
+          <li><strong>Adhere to Timed Intervals:</strong> Take antibiotics at consistent hours (e.g. every 8 hours for TDS) to maintain steady therapeutic blood levels.</li>
+        </ul>
+      </div>
+
+      <!-- Guide 4: Expiration & Safe Disposal -->
+      <div class="guide-card">
+        <div class="guide-header">
+          <div class="guide-icon">&#9851;</div>
+          <h3>Expiration Dates & Safe Disposal</h3>
+        </div>
+        <p>Expired medicines can lose potency or break down into harmful sub-compounds.</p>
+        <ul class="guide-list">
+          <li><strong>Checking Expiration Dates:</strong> The date stamped on the strip or bottle indicates the final day of that month the manufacturer guarantees safety and efficacy.</li>
+          <li><strong>Do Not Flush Down Drains:</strong> Flushing antibiotics and hormonal drugs contaminates water supplies and the environment.</li>
+          <li><strong>Hospital Take-Back Bins:</strong> Drop expired or unused medicines at the Metropolitan Hospital Pharmacy safe-disposal receptacle for certified biomedical incineration.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Questions for Your Pharmacist -->
+    <div class="pharmacist-qa-box mt-4">
+      <h3>5 Important Questions to Ask Your Pharmacist</h3>
+      <div class="qa-grid">
+        <div class="qa-item">
+          <strong>1. What is the exact purpose of this medicine?</strong>
+          <p>Understand which condition or symptom each medication addresses.</p>
+        </div>
+        <div class="qa-item">
+          <strong>2. How and when should I take it?</strong>
+          <p>Confirm timing relative to meals and whether it induces drowsiness.</p>
+        </div>
+        <div class="qa-item">
+          <strong>3. What foods, drinks, or supplements should I avoid?</strong>
+          <p>Certain juices, dairy, and herbal products interfere with absorption.</p>
+        </div>
+        <div class="qa-item">
+          <strong>4. What should I do if I accidentally miss a dose?</strong>
+          <p>Never take a double dose without specific pharmacist instructions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

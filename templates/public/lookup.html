@@ -1,0 +1,148 @@
+{% extends "base_public.html" %}
+
+{% block title %}Track Prescription Status - RxCare{% endblock %}
+
+{% block content %}
+<section class="page-header-banner">
+  <div class="banner-container">
+    <span class="banner-kicker">Patient Prescription Portal</span>
+    <h1>Verify Prescription Status</h1>
+    <p>Check the fulfillment and dispensing status of hospital prescriptions issued at Metropolitan Hospital.</p>
+  </div>
+</section>
+
+<section class="public-section">
+  <div class="section-container">
+
+    <!-- Search Box Card -->
+    <div class="lookup-card">
+      <div class="lookup-card-header">
+        <h3>Prescription Verification</h3>
+        <p>Enter your numeric Prescription ID (found on your prescription header) or your registered patient phone number.</p>
+      </div>
+
+      <form method="POST" action="{{ url_for('public.lookup') }}" class="lookup-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-row-lookup">
+          <div class="form-group" style="min-width: 220px;">
+            <label for="queryType" class="form-label">Search Criteria</label>
+            <select name="query_type" id="queryType" class="form-control">
+              <option value="rx_number" {% if query_type == 'rx_number' %}selected{% endif %}>Prescription ID (e.g. 1, 2)</option>
+              <option value="phone" {% if query_type == 'phone' %}selected{% endif %}>Patient Phone Number</option>
+            </select>
+          </div>
+
+          <div class="form-group flex-grow">
+            <label for="queryVal" class="form-label">Enter Reference Number / Mobile</label>
+            <input 
+              type="text" 
+              name="query_val" 
+              id="queryVal" 
+              value="{{ query_val }}" 
+              placeholder="e.g. 1 or 9876543210" 
+              class="form-control"
+              required
+            >
+          </div>
+
+          <div class="form-group form-btn-align">
+            <button type="submit" class="btn btn-primary btn-lg">Check Status</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    {% if searched %}
+      <div class="lookup-results-container mt-4">
+        {% if results %}
+          <div class="results-header-info">
+            <h3>Prescription Verification Records ({{ results|length }} found)</h3>
+            <p>Verification successful against Oracle Hospital Pharmacy DBMS.</p>
+          </div>
+
+          {% for rx in results %}
+          <div class="prescription-status-card">
+            <div class="status-card-top">
+              <div class="status-top-left">
+                <span class="rx-badge">Rx #{{ rx.prescription_id }}</span>
+                <span class="rx-date">Issued: {{ rx.prescription_date|format_date }}</span>
+              </div>
+              <div class="status-top-right">
+                <span class="badge badge-primary">ACTIVE &bull; Ready at Counter</span>
+              </div>
+            </div>
+
+            <div class="status-details-grid">
+              <div class="detail-block">
+                <span class="detail-label">Patient Name</span>
+                <strong class="detail-val">{{ rx.patient_name }}</strong>
+              </div>
+              <div class="detail-block">
+                <span class="detail-label">Registered Phone</span>
+                <strong class="detail-val">{{ rx.contact_number }}</strong>
+              </div>
+              <div class="detail-block">
+                <span class="detail-label">Prescribing Physician</span>
+                <strong class="detail-val">{{ rx.doctor_name }}</strong>
+              </div>
+              <div class="detail-block">
+                <span class="detail-label">Clinical Indication / Diagnosis</span>
+                <strong class="detail-val">{{ rx.diagnosis or 'Routine Hospital Consultation' }}</strong>
+              </div>
+            </div>
+
+            <!-- Prescribed Medications List -->
+            <div class="prescribed-items-section">
+              <h4>Prescribed Medication Regimen</h4>
+              {% if rx.medications %}
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Medication Name</th>
+                      <th>Category</th>
+                      <th>Dosage & Frequency</th>
+                      <th>Prescribed Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for itm in rx.medications %}
+                    <tr>
+                      <td><strong>{{ itm.medicine_name }}</strong></td>
+                      <td><span class="badge badge-light">{{ itm.category }}</span></td>
+                      <td><code>{{ itm.dosage }}</code></td>
+                      <td>{{ itm.quantity }} units</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-muted">No specific item lines attached to this prescription entry.</p>
+              {% endif %}
+            </div>
+
+            <div class="status-card-footer">
+              <div class="dispense-instruction">
+                <strong>Counter Collection Instructions:</strong>
+                <span>Present this Prescription Number (Rx #{{ rx.prescription_id }}) along with your hospital card at Outpatient Dispensary Counter 2.</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+        {% else %}
+          <div class="empty-state-card text-center">
+            <h4>No prescription records found</h4>
+            <p>We could not find any active hospital prescriptions matching "<strong>{{ query_val }}</strong>".</p>
+            <p class="text-muted">Please double check your Prescription Reference ID or registered phone number, or visit the dispensary counter for manual assistance.</p>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

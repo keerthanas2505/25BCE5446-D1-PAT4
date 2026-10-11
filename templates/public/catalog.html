@@ -1,0 +1,112 @@
+{% extends "base_public.html" %}
+
+{% block title %}Hospital Medicine Formulary - RxCare{% endblock %}
+
+{% block content %}
+<section class="page-header-banner">
+  <div class="banner-container">
+    <span class="banner-kicker">Hospital Formulary Directory</span>
+    <h1>Medicine Information & Formulary</h1>
+    <p>Search active formulations, therapeutic categories, and verify medicine availability at our hospital dispensary.</p>
+  </div>
+</section>
+
+<section class="public-section">
+  <div class="section-container">
+
+    <!-- Search & Filter Bar -->
+    <div class="catalog-filter-card">
+      <form method="GET" action="{{ url_for('public.catalog') }}" class="catalog-filter-form">
+        <div class="form-group flex-grow">
+          <label for="catalogSearch" class="form-label">Search Medicine Name or Generic Description</label>
+          <input 
+            type="text" 
+            id="catalogSearch" 
+            name="q" 
+            value="{{ search_query }}" 
+            placeholder="e.g. Paracetamol, Amoxicillin, Metformin, Salbutamol..."
+            class="form-control"
+          >
+        </div>
+
+        <div class="form-group" style="min-width: 220px;">
+          <label for="categoryFilter" class="form-label">Therapeutic Category</label>
+          <select name="category" id="categoryFilter" class="form-control">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+              <option value="{{ cat.category }}" {% if selected_category == cat.category %}selected{% endif %}>
+                {{ cat.category }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-actions-inline">
+          <button type="submit" class="btn btn-primary">Search Formulary</button>
+          {% if search_query or selected_category %}
+            <a href="{{ url_for('public.catalog') }}" class="btn btn-outline-secondary">Clear Filters</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+
+    <!-- Notice -->
+    <div class="patient-safety-notice">
+      <div class="notice-icon">&#9432;</div>
+      <div class="notice-text">
+        <strong>Prescription Dispensing Notice:</strong> Scheduled and prescription medications require a physical or verified electronic prescription from a registered medical practitioner. Prices shown represent the maximum retail dispensing price per unit at the hospital counter.
+      </div>
+    </div>
+
+    <!-- Formulary Results -->
+    <div class="catalog-results-section mt-4">
+      <div class="results-meta">
+        <h3>Available Medicines ({% if medicines %}{{ medicines|length }}{% else %}0{% endif %} items found)</h3>
+        {% if search_query %}
+          <span class="active-query-tag">Searching: "{{ search_query }}"</span>
+        {% endif %}
+      </div>
+
+      {% if medicines %}
+      <div class="catalog-grid">
+        {% for med in medicines %}
+        <div class="catalog-card">
+          <div class="catalog-card-header">
+            <span class="catalog-category-badge">{{ med.category }}</span>
+            {% if med.quantity > 10 %}
+              <span class="badge badge-success">In Stock</span>
+            {% elif med.quantity > 0 %}
+              <span class="badge badge-warning">Limited Availability</span>
+            {% else %}
+              <span class="badge badge-danger">Consult Pharmacist</span>
+            {% endif %}
+          </div>
+
+          <h4 class="catalog-med-name">{{ med.medicine_name }}</h4>
+          <p class="catalog-med-desc">{{ med.description or 'Hospital approved therapeutic formulation.' }}</p>
+
+          <div class="catalog-card-footer">
+            <div class="catalog-price">
+              <span class="price-label">Retail Price:</span>
+              <span class="price-value">{{ med.unit_price|currency }}</span>
+            </div>
+            <div class="catalog-cta">
+              <span class="dispense-note">Hospital Counter</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state-card text-center">
+        <h4>No medicines match your search criteria</h4>
+        <p>Try searching with generic names (e.g., "Paracetamol", "Inhaler", "Syrup") or reset your category filter.</p>
+        <a href="{{ url_for('public.catalog') }}" class="btn btn-primary mt-2">View Full Formulary</a>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

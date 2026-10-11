@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory Valuation Report{% endblock %}
+{% block page_title %}Pharmacy Stock Valuation & Formulary Report{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi-card kpi-teal-card">
+    <div class="kpi-header"><span class="kpi-label">Total Inventory Value</span></div>
+    <div class="kpi-value">{{ total_val | currency }}</div>
+    <div class="kpi-subtext">Cumulative stock asset valuation</div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-header"><span class="kpi-label">Catalog Products</span></div>
+    <div class="kpi-value">{{ total_items }}</div>
+    <div class="kpi-subtext">Tracked medication formulations</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Inventory Valuation (Oracle View: VW_INVENTORY_STATUS)</h3>
+    <a href="{{ url_for('reports.export_inventory_csv') }}" class="btn btn-secondary btn-sm">
+      Download Inventory CSV
+    </a>
+  </div>
+  <div class="card-body">
+    <!-- Filter Bar -->
+    <form method="GET" action="{{ url_for('reports.inventory') }}" class="filter-bar">
+      <select name="category" class="form-control" style="max-width: 200px;">
+        <option value="">All Pharmacological Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="status" class="form-control" style="max-width: 180px;">
+        <option value="">All Stock Levels</option>
+        <option value="low" {% if current_status == 'low' %}selected{% endif %}>Low Stock & Out</option>
+        <option value="adequate" {% if current_status == 'adequate' %}selected{% endif %}>Adequate Levels</option>
+      </select>
+
+      <button type="submit" class="btn btn-secondary">Filter Inventory</button>
+      {% if current_category or current_status %}
+        <a href="{{ url_for('reports.inventory') }}" class="btn btn-secondary">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Medicine</th>
+            <th>Category</th>
+            <th>Batch</th>
+            <th>Physical Stock</th>
+            <th>Reorder Min</th>
+            <th>Unit Price</th>
+            <th>Asset Value</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th>Supplier</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in medicines %}
+          <tr>
+            <td>
+              <a href="{{ url_for('medicines.detail', medicine_id=m.medicine_id) }}">
+                <strong>{{ m.medicine_name }}</strong>
+              </a>
+            </td>
+            <td>{{ m.category }}</td>
+            <td><code>{{ m.batch_number }}</code></td>
+            <td style="font-weight: 600;">{{ m.quantity }}</td>
+            <td>{{ m.reorder_threshold }}</td>
+            <td>{{ m.unit_price | currency }}</td>
+            <td style="font-weight: 700; color: var(--primary-navy);">
+              {{ (m.quantity * m.unit_price) | currency }}
+            </td>
+            <td>{{ m.expiry_date | format_date }}</td>
+            <td>
+              {% if m.stock_status == 'OUT OF STOCK' %}
+                <span class="badge badge-danger">Out of Stock</span>
+              {% elif m.stock_status == 'LOW STOCK' %}
+                <span class="badge badge-warning">Low Stock</span>
+              {% else %}
+                <span class="badge badge-success">Adequate</span>
+              {% endif %}
+            </td>
+            <td>{{ m.supplier_name }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="10" class="empty-state">No inventory records found for this filter.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

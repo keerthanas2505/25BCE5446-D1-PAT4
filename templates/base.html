@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}RxCare{% endblock %} - Hospital Pharmacy Management System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <a href="{{ url_for('dashboard.index') }}" class="sidebar-brand-link">
+          <img src="{{ url_for('static', filename='images/rxcare-icon.svg') }}" alt="RxCare Logo" class="brand-sidebar-icon">
+          <div class="brand-text">
+            <h1>RxCare</h1>
+            <span>Hospital Pharmacy</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Role-Based Portal Indicator -->
+      <div class="portal-role-banner">
+        {% if current_user and current_user.role == 'ADMIN' %}
+          <span class="role-pill role-pill-admin">Administrator Portal</span>
+        {% elif current_user and current_user.role == 'PHARMACIST' %}
+          <span class="role-pill role-pill-pharm">Pharmacist Workspace</span>
+        {% else %}
+          <span class="role-pill">Staff Portal</span>
+        {% endif %}
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Clinical Operations</div>
+        <a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+          Dashboard Overview
+        </a>
+        <a href="{{ url_for('billing.new') }}" class="nav-item {% if request.endpoint == 'billing.new' %}active{% endif %}">
+          New Sale / Dispense
+        </a>
+        <a href="{{ url_for('billing.index') }}" class="nav-item {% if request.endpoint == 'billing.index' %}active{% endif %}">
+          Sales & Invoices
+        </a>
+
+        <div class="nav-section-title">Formulary & Patient Records</div>
+        <a href="{{ url_for('medicines.index') }}" class="nav-item {% if request.blueprint == 'medicines' %}active{% endif %}">
+          Medicine Inventory
+        </a>
+        <a href="{{ url_for('prescriptions.index') }}" class="nav-item {% if request.blueprint == 'prescriptions' %}active{% endif %}">
+          Prescriptions
+        </a>
+        <a href="{{ url_for('patients.index') }}" class="nav-item {% if request.blueprint == 'patients' %}active{% endif %}">
+          Patients
+        </a>
+        <a href="{{ url_for('suppliers.index') }}" class="nav-item {% if request.blueprint == 'suppliers' %}active{% endif %}">
+          Suppliers
+        </a>
+
+        <div class="nav-section-title">Clinical Intelligence</div>
+        <a href="{{ url_for('reports.sales') }}" class="nav-item {% if request.endpoint == 'reports.sales' %}active{% endif %}">
+          Sales Reports
+        </a>
+        <a href="{{ url_for('reports.inventory') }}" class="nav-item {% if request.endpoint == 'reports.inventory' %}active{% endif %}">
+          Inventory Valuation
+        </a>
+        <a href="{{ url_for('reports.expiry') }}" class="nav-item {% if request.endpoint == 'reports.expiry' %}active{% endif %}">
+          Expiry Risk Alerts
+        </a>
+
+        {% if current_user and current_user.role == 'ADMIN' %}
+        <div class="nav-section-title">System Administration</div>
+        <a href="{{ url_for('auth.users_list') }}" class="nav-item {% if request.endpoint == 'auth.users_list' %}active{% endif %}">
+          Staff Accounts
+        </a>
+        {% endif %}
+
+        <div class="nav-section-title">Public Portal</div>
+        <a href="{{ url_for('public.home') }}" class="nav-item nav-item-public" target="_blank" rel="noopener">
+          View Public Website &nearr;
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        {% if current_user %}
+        <div class="user-badge">
+          <span class="user-name">{{ current_user.full_name }}</span>
+          <span class="user-role">{{ current_user.role }} ({{ current_user.username }})</span>
+          <a href="{{ url_for('auth.logout') }}" class="logout-link">Sign Out</a>
+        </div>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-primary" style="width: 100%;">Sign In</a>
+        {% endif %}
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="app-main">
+      <header class="app-header">
+        <div class="header-title">
+          <h2>{% block page_title %}Pharmacy Dashboard{% endblock %}</h2>
+        </div>
+        <div class="header-status-badge">
+          <span class="status-dot"></span>
+          <span>Oracle XE 21c (XEPDB1) Online</span>
+        </div>
+      </header>
+
+      <main class="app-content">
+        <!-- Flash Notifications -->
+        <div class="flash-container">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                  <span>{{ message }}</span>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

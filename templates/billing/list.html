@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Invoices{% endblock %}
+{% block page_title %}Pharmacy Sales Invoices & Billing History{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Dispensing Invoices</h3>
+    <a href="{{ url_for('billing.new') }}" class="btn btn-primary btn-sm">+ New Sale / Bill</a>
+  </div>
+  <div class="card-body">
+    <!-- Filter Bar -->
+    <form method="GET" action="{{ url_for('billing.index') }}" class="filter-bar">
+      <input 
+        type="text" 
+        name="search" 
+        value="{{ current_search }}" 
+        class="form-control" 
+        placeholder="Search invoice number or customer name..." 
+        style="max-width: 280px;"
+      >
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 12px; color: var(--text-muted);">From:</span>
+        <input 
+          type="date" 
+          name="date_from" 
+          value="{{ current_date_from }}" 
+          class="form-control" 
+          style="max-width: 150px;"
+        >
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 12px; color: var(--text-muted);">To:</span>
+        <input 
+          type="date" 
+          name="date_to" 
+          value="{{ current_date_to }}" 
+          class="form-control" 
+          style="max-width: 150px;"
+        >
+      </div>
+
+      <button type="submit" class="btn btn-secondary">Apply Filters</button>
+      {% if current_search or current_date_from or current_date_to %}
+        <a href="{{ url_for('billing.index') }}" class="btn btn-secondary">Reset</a>
+      {% endif %}
+    </form>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Invoice #</th>
+            <th>Date & Time</th>
+            <th>Customer / Patient</th>
+            <th>Billed By</th>
+            <th>Items</th>
+            <th>Payment</th>
+            <th>Gross Subtotal</th>
+            <th>Final Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in bills %}
+          <tr>
+            <td>
+              <a href="{{ url_for('billing.invoice', bill_id=b.bill_id) }}">
+                <strong>{{ b.bill_number }}</strong>
+              </a>
+            </td>
+            <td>{{ b.bill_date | format_date }}</td>
+            <td>
+              {% if b.patient_id %}
+                <a href="{{ url_for('patients.detail', patient_id=b.patient_id) }}">
+                  {{ b.customer_name }}
+                </a>
+              {% else %}
+                {{ b.customer_name }}
+              {% endif %}
+            </td>
+            <td>{{ b.billed_by_user or 'System' }}</td>
+            <td>
+              <span class="badge badge-neutral">{{ b.items_count }} items</span>
+            </td>
+            <td>
+              <span class="badge badge-info">{{ b.payment_method }}</span>
+            </td>
+            <td>{{ b.subtotal | currency }}</td>
+            <td style="font-weight: 700; color: var(--primary-navy); font-size: 14px;">
+              {{ b.total_amount | currency }}
+            </td>
+            <td>
+              <a href="{{ url_for('billing.invoice', bill_id=b.bill_id) }}" class="btn btn-sm btn-secondary">
+                Print Invoice
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="9" class="empty-state">
+              No sales invoices found matching your filter criteria.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

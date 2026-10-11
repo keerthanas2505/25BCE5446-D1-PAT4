@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}RxCare{% endblock %} - Hospital Pharmacy Management System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="public-body">
+
+  <!-- Top Public Healthcare Navigation Bar -->
+  <header class="public-header">
+    <div class="public-nav-container">
+      <a href="{{ url_for('public.home') }}" class="public-brand" aria-label="RxCare Hospital Pharmacy Home">
+        <img src="{{ url_for('static', filename='images/rxcare-logo.svg') }}" alt="RxCare Logo" class="brand-logo-img">
+      </a>
+
+      <button class="nav-mobile-toggle" id="publicNavToggle" aria-label="Toggle navigation menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="public-nav-menu" id="publicNavMenu">
+        <a href="{{ url_for('public.home') }}" class="public-nav-link {% if request.endpoint == 'public.home' %}active{% endif %}">Home</a>
+        <a href="{{ url_for('public.services') }}" class="public-nav-link {% if request.endpoint == 'public.services' %}active{% endif %}">Pharmacy Services</a>
+        <a href="{{ url_for('public.catalog') }}" class="public-nav-link {% if request.endpoint == 'public.catalog' %}active{% endif %}">Medicine Formulary</a>
+        <a href="{{ url_for('public.guide') }}" class="public-nav-link {% if request.endpoint == 'public.guide' %}active{% endif %}">Prescription Guide</a>
+        <a href="{{ url_for('public.about') }}" class="public-nav-link {% if request.endpoint == 'public.about' %}active{% endif %}">About Us</a>
+        <a href="{{ url_for('public.contact') }}" class="public-nav-link {% if request.endpoint == 'public.contact' %}active{% endif %}">Contact & Hours</a>
+
+        <div class="public-nav-actions">
+          <a href="{{ url_for('public.lookup') }}" class="btn btn-outline-primary btn-sm">
+            Track Prescription
+          </a>
+          {% if current_user %}
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary btn-sm">
+              Staff Portal ({{ current_user.role }})
+            </a>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm">
+              Staff Sign In
+            </a>
+          {% endif %}
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  <div class="public-flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content Block -->
+  <main class="public-main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Professional Medical Institutional Footer -->
+  <footer class="public-footer">
+    <div class="public-footer-container">
+      <div class="footer-col footer-col-brand">
+        <div class="footer-brand-header">
+          <img src="{{ url_for('static', filename='images/rxcare-icon.svg') }}" alt="RxCare" class="footer-icon">
+          <h3>RxCare Pharmacy</h3>
+        </div>
+        <p class="footer-desc">
+          Metropolitan Hospital Pharmacy Services provides verified clinical dispensing, inpatient medication supply, and structured pharmacotherapy review in full accordance with national healthcare safety protocols.
+        </p>
+        <div class="footer-cert-note">
+          <span>Enterprise Oracle Database XE 21c (XEPDB1) Backend</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Patient Services</h4>
+        <ul class="footer-links">
+          <li><a href="{{ url_for('public.catalog') }}">Hospital Medicine Formulary</a></li>
+          <li><a href="{{ url_for('public.lookup') }}">Prescription Status Verification</a></li>
+          <li><a href="{{ url_for('public.guide') }}">Safe Medication Guidelines</a></li>
+          <li><a href="{{ url_for('public.services') }}">24/7 Inpatient Dispensing</a></li>
+          <li><a href="{{ url_for('public.services') }}">Outpatient Counter Services</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Department & Location</h4>
+        <div class="footer-contact-item">
+          <strong>Metropolitan Hospital Pharmacy</strong>
+          <span>VIT Chennai Campus Health Facility</span>
+          <span>Vandalur-Kelambakkam Road, Chennai - 600127</span>
+        </div>
+        <div class="footer-contact-item">
+          <strong>Direct Telephone:</strong>
+          <span>+91 44 3993 1555</span>
+        </div>
+        <div class="footer-contact-item">
+          <strong>Official Email:</strong>
+          <span>pharmacy@metropolitanhospital.org</span>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Dispensary Hours</h4>
+        <div class="footer-hours-box">
+          <div class="hours-row">
+            <span>Outpatient Dispensary:</span>
+            <strong>08:00 AM – 10:00 PM</strong>
+          </div>
+          <div class="hours-row">
+            <span>Inpatient & Emergency:</span>
+            <strong class="text-teal">24 Hours / 7 Days</strong>
+          </div>
+          <div class="hours-row">
+            <span>Clinical Counseling:</span>
+            <strong>09:00 AM – 06:00 PM</strong>
+          </div>
+        </div>
+        <div class="footer-portal-link">
+          <a href="{{ url_for('auth.login') }}" class="staff-access-link">Staff Login Portal &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="public-footer-bottom">
+      <div class="footer-bottom-container">
+        <p>&copy; {{ now.year }} RxCare — Metropolitan Hospital Pharmacy Management System. Developed for VIT Chennai DBMS PAT 4.</p>
+        <p class="footer-disclaimer">
+          Confidential patient medical records, inventory purchase valuation, and supplier contracts are protected by role-based access control. Public visitors cannot access restricted clinical databases.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Responsive Navbar Toggle for mobile devices
+    document.addEventListener("DOMContentLoaded", function() {
+      const toggle = document.getElementById("publicNavToggle");
+      const menu = document.getElementById("publicNavMenu");
+      if (toggle && menu) {
+        toggle.addEventListener("click", function() {
+          menu.classList.toggle("open");
+          toggle.classList.toggle("active");
+        });
+      }
+    });
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

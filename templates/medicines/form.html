@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Medicine{% else %}Add Medicine{% endif %}{% endblock %}
+{% block page_title %}{% if is_edit %}Edit Medicine Record #{{ medicine_id }}{% else %}Register New Medicine{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+  <div class="card-header">
+    <h3 class="card-title">{% if is_edit %}Update Formulary Details{% else %}Medicine Inventory Registration{% endif %}</h3>
+    <a href="{{ url_for('medicines.index') }}" class="btn btn-sm btn-secondary">Back to List</a>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="medicine_name">Medicine Name *</label>
+          <input 
+            type="text" 
+            id="medicine_name" 
+            name="medicine_name" 
+            class="form-control" 
+            value="{{ form_data.medicine_name or '' }}" 
+            placeholder="e.g. Paracetamol 650mg" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="category">Category *</label>
+          <select id="category" name="category" class="form-control" required>
+            <option value="">Select Pharmacological Category</option>
+            {% for cat in ['Analgesic', 'Antibiotic', 'Antidiabetic', 'Antihistamine', 'Antihypertensive', 'Antipyretic', 'Antiviral', 'Cardiovascular', 'Gastrointestinal', 'Vitamin'] %}
+              <option value="{{ cat }}" {% if form_data.category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Therapeutic Indication / Description</label>
+        <textarea 
+          id="description" 
+          name="description" 
+          class="form-control" 
+          rows="2" 
+          placeholder="Brief clinical indication, administration route, or notes..."
+        >{{ form_data.description or '' }}</textarea>
+      </div>
+
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label" for="unit_price">Unit Price (INR) *</label>
+          <input 
+            type="number" 
+            step="0.01" 
+            min="0" 
+            id="unit_price" 
+            name="unit_price" 
+            class="form-control" 
+            value="{{ form_data.unit_price or '' }}" 
+            placeholder="0.00" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="quantity">Available Quantity *</label>
+          <input 
+            type="number" 
+            min="0" 
+            id="quantity" 
+            name="quantity" 
+            class="form-control" 
+            value="{{ form_data.quantity or '0' }}" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reorder_threshold">Reorder Threshold *</label>
+          <input 
+            type="number" 
+            min="0" 
+            id="reorder_threshold" 
+            name="reorder_threshold" 
+            class="form-control" 
+            value="{{ form_data.reorder_threshold or '15' }}" 
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label" for="batch_number">Batch Number *</label>
+          <input 
+            type="text" 
+            id="batch_number" 
+            name="batch_number" 
+            class="form-control" 
+            value="{{ form_data.batch_number or '' }}" 
+            placeholder="e.g. PCM-2025-01" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="expiry_date">Expiry Date *</label>
+          <input 
+            type="date" 
+            id="expiry_date" 
+            name="expiry_date" 
+            class="form-control" 
+            value="{{ form_data.expiry_date or '' }}" 
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="supplier_id">Authorized Supplier *</label>
+          <select id="supplier_id" name="supplier_id" class="form-control" required>
+            <option value="">Select Supplier</option>
+            {% for s in suppliers %}
+              <option value="{{ s.supplier_id }}" {% if form_data.supplier_id|string == s.supplier_id|string %}selected{% endif %}>
+                {{ s.supplier_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 12px;">
+        <button type="submit" class="btn btn-primary">
+          {% if is_edit %}Update Medicine Details{% else %}Save Medicine to Inventory{% endif %}
+        </button>
+        <a href="{{ url_for('medicines.index') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

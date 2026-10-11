@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Bad Request (400){% endblock %}
+{% block page_title %}400 - Request Validation Error{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 30px;">
+  <div style="font-size: 32px; font-weight: 700; color: var(--status-danger); margin-bottom: 12px;">400</div>
+  <h3 style="font-size: 18px; color: var(--primary-navy); margin-bottom: 8px;">Invalid Request or Security Token Mismatch</h3>
+  <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+    {{ description or 'Your session request could not be validated. If you were submitting a form, please refresh and retry.' }}
+  </p>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Return to Dashboard</a>
+</div>
+{% endblock %}

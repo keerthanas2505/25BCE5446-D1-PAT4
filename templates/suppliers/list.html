@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Suppliers{% endblock %}
+{% block page_title %}Pharmaceutical Suppliers & Distributors{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Registered Distributors</h3>
+    <a href="{{ url_for('suppliers.add') }}" class="btn btn-primary btn-sm">+ Add Supplier</a>
+  </div>
+  <div class="card-body">
+    <!-- Search Bar -->
+    <form method="GET" action="{{ url_for('suppliers.index') }}" class="filter-bar">
+      <input 
+        type="text" 
+        name="search" 
+        value="{{ current_search }}" 
+        class="form-control" 
+        placeholder="Search distributor name, contact person, or phone..." 
+        style="max-width: 380px;"
+      >
+      <button type="submit" class="btn btn-secondary">Search</button>
+      {% if current_search %}
+        <a href="{{ url_for('suppliers.index') }}" class="btn btn-secondary">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Distributor / Company</th>
+            <th>Contact Person</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Products Supplied</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in suppliers %}
+          <tr>
+            <td>#{{ s.supplier_id }}</td>
+            <td>
+              <a href="{{ url_for('suppliers.detail', supplier_id=s.supplier_id) }}">
+                <strong>{{ s.supplier_name }}</strong>
+              </a>
+              {% if s.address %}
+                <div style="font-size: 11px; color: var(--text-muted);">{{ s.address }}</div>
+              {% endif %}
+            </td>
+            <td>{{ s.contact_person or 'N/A' }}</td>
+            <td><code>{{ s.phone }}</code></td>
+            <td>{{ s.email or 'N/A' }}</td>
+            <td>
+              <span class="badge badge-neutral">{{ s.total_medicines_supplied }} items</span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <a href="{{ url_for('suppliers.detail', supplier_id=s.supplier_id) }}" class="btn btn-sm btn-secondary">View</a>
+                <a href="{{ url_for('suppliers.edit', supplier_id=s.supplier_id) }}" class="btn btn-sm btn-secondary">Edit</a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="empty-state">
+              No suppliers found matching your query.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}{{ supplier.supplier_name }}{% endblock %}
+{% block page_title %}{{ supplier.supplier_name }} - Supplier Profile{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <a href="{{ url_for('suppliers.index') }}" class="btn btn-secondary">&larr; Back to Suppliers</a>
+  <div style="display: flex; gap: 8px;">
+    <a href="{{ url_for('suppliers.edit', supplier_id=supplier.supplier_id) }}" class="btn btn-secondary">Edit Supplier</a>
+    <form method="POST" action="{{ url_for('suppliers.delete', supplier_id=supplier.supplier_id) }}" onsubmit="return confirmDelete('supplier');" style="display: inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">Delete Supplier</button>
+    </form>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 320px 1fr; gap: 24px;">
+  <!-- Left: Vendor Info -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Vendor Information</h3>
+    </div>
+    <div class="card-body">
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 12px; color: var(--text-muted);">Company Name</div>
+        <div style="font-weight: 700; font-size: 16px; color: var(--primary-navy);">{{ supplier.supplier_name }}</div>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 12px; color: var(--text-muted);">Representative</div>
+        <div style="font-weight: 500;">{{ supplier.contact_person or 'None Specified' }}</div>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 12px; color: var(--text-muted);">Phone Contact</div>
+        <div><code>{{ supplier.phone }}</code></div>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 12px; color: var(--text-muted);">Email</div>
+        <div>{{ supplier.email or 'N/A' }}</div>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <div style="font-size: 12px; color: var(--text-muted);">Registered Address</div>
+        <div style="font-size: 13px; color: #334155;">{{ supplier.address or 'No address on file.' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Supplied Drugs Catalog -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Pharmaceutical Products Supplied ({{ medicines | length }})</h3>
+      <a href="{{ url_for('medicines.add') }}" class="btn btn-sm btn-primary">+ Add New Drug</a>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Medicine Name</th>
+              <th>Category</th>
+              <th>Batch No.</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Expiry</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in medicines %}
+            <tr>
+              <td>#{{ m.medicine_id }}</td>
+              <td><strong>{{ m.medicine_name }}</strong></td>
+              <td>{{ m.category }}</td>
+              <td><code>{{ m.batch_number }}</code></td>
+              <td>{{ m.unit_price | currency }}</td>
+              <td style="font-weight: 600;">{{ m.quantity }}</td>
+              <td>{{ m.expiry_date | format_date }}</td>
+              <td>
+                <a href="{{ url_for('medicines.detail', medicine_id=m.medicine_id) }}" class="btn btn-sm btn-secondary">Inspect</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8" class="empty-state">
+                No medicines currently associated with this supplier.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

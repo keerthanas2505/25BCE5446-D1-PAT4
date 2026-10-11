@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Pharmacy Operations & Clinical Dashboard{% endblock %}
+
+{% block content %}
+<!-- Quick Action Toolbar -->
+<div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+  <a href="{{ url_for('billing.new') }}" class="btn btn-primary">
+    + New Sale / Bill
+  </a>
+  <a href="{{ url_for('medicines.add') }}" class="btn btn-secondary">
+    + Add Medicine
+  </a>
+  <a href="{{ url_for('patients.add') }}" class="btn btn-secondary">
+    + Register Patient
+  </a>
+  <a href="{{ url_for('prescriptions.add') }}" class="btn btn-secondary">
+    + New Prescription
+  </a>
+</div>
+
+<!-- KPI Summary Cards Grid (All from Oracle Queries) -->
+<div class="kpi-grid">
+  <!-- Total Medicines -->
+  <a href="{{ url_for('medicines.index') }}" class="kpi-card kpi-teal-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Total Medicines</span>
+    </div>
+    <div class="kpi-value">{{ stats.total_medicines }}</div>
+    <div class="kpi-subtext">Active catalog drugs</div>
+  </a>
+
+  <!-- Today's Sales -->
+  <a href="{{ url_for('reports.sales') }}" class="kpi-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Today's Revenue</span>
+    </div>
+    <div class="kpi-value">{{ stats.today_sales_amount | currency }}</div>
+    <div class="kpi-subtext">{{ stats.today_sales_count }} sales transactions today</div>
+  </a>
+
+  <!-- Total Inventory Valuation -->
+  <a href="{{ url_for('reports.inventory') }}" class="kpi-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Inventory Value</span>
+    </div>
+    <div class="kpi-value">{{ stats.inventory_value | currency }}</div>
+    <div class="kpi-subtext">Asset valuation in stock</div>
+  </a>
+
+  <!-- Low Stock Alert -->
+  <a href="{{ url_for('medicines.index', stock_status='low') }}" class="kpi-card kpi-alert-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Low Stock Drugs</span>
+    </div>
+    <div class="kpi-value">{{ stats.low_stock_count }}</div>
+    <div class="kpi-subtext">At or below reorder threshold</div>
+  </a>
+
+  <!-- Expired Drugs -->
+  <a href="{{ url_for('medicines.index', stock_status='expired') }}" class="kpi-card kpi-danger-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Expired Drugs</span>
+    </div>
+    <div class="kpi-value">{{ stats.expired_count }}</div>
+    <div class="kpi-subtext">Strictly blocked from billing</div>
+  </a>
+
+  <!-- Expiring Soon (<60 Days) -->
+  <a href="{{ url_for('reports.expiry') }}" class="kpi-card kpi-alert-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Expiring Soon</span>
+    </div>
+    <div class="kpi-value">{{ stats.near_expiry_count }}</div>
+    <div class="kpi-subtext">Expiring within 60 days</div>
+  </a>
+
+  <!-- Registered Patients -->
+  <a href="{{ url_for('patients.index') }}" class="kpi-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Registered Patients</span>
+    </div>
+    <div class="kpi-value">{{ stats.total_patients }}</div>
+    <div class="kpi-subtext">Clinical profiles registered</div>
+  </a>
+
+  <!-- Active Suppliers -->
+  <a href="{{ url_for('suppliers.index') }}" class="kpi-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Distributors / Suppliers</span>
+    </div>
+    <div class="kpi-value">{{ stats.total_suppliers }}</div>
+    <div class="kpi-subtext">Verified supply vendors</div>
+  </a>
+</div>
+
+<!-- Two-Column Operational Activity Grid -->
+<div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px;">
+  <!-- Left: Critical Stock & Expiry Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Priority Inventory Alerts</h3>
+      <a href="{{ url_for('medicines.index') }}" class="btn btn-sm btn-secondary">View Inventory</a>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Medicine</th>
+              <th>Category</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in critical_medicines %}
+            <tr>
+              <td>
+                <strong>{{ item.medicine_name }}</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">Supplier: {{ item.supplier_name }}</div>
+              </td>
+              <td>{{ item.category }}</td>
+              <td>
+                <span style="font-weight: 600;">{{ item.quantity }}</span>
+                <span style="font-size: 11px; color: var(--text-muted);">(Min: {{ item.reorder_threshold }})</span>
+              </td>
+              <td>
+                {% if item.alert_status == 'EXPIRED' %}
+                  <span class="badge badge-danger">Expired</span>
+                {% elif item.alert_status == 'OUT OF STOCK' %}
+                  <span class="badge badge-danger">Out of Stock</span>
+                {% elif item.alert_status == 'LOW STOCK' %}
+                  <span class="badge badge-warning">Low Stock</span>
+                {% elif item.alert_status == 'EXPIRING SOON' %}
+                  <span class="badge badge-warning">Expiring Soon</span>
+                {% else %}
+                  <span class="badge badge-neutral">Adequate</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('medicines.detail', medicine_id=item.medicine_id) }}" class="btn btn-sm btn-secondary">Inspect</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="empty-state">
+                No critical inventory alerts. Stock levels and expiries are healthy.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Recent Sales Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Recent Invoices</h3>
+      <a href="{{ url_for('billing.index') }}" class="btn btn-sm btn-secondary">All Invoices</a>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Amount</th>
+              <th>Payment</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bill in recent_bills %}
+            <tr>
+              <td>
+                <strong>{{ bill.bill_number }}</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">{{ bill.bill_date | format_date }}</div>
+              </td>
+              <td>{{ bill.customer_name }}</td>
+              <td style="font-weight: 600; color: var(--primary-navy);">
+                {{ bill.total_amount | currency }}
+              </td>
+              <td>
+                <span class="badge badge-info">{{ bill.payment_method }}</span>
+              </td>
+              <td>
+                <a href="{{ url_for('billing.invoice', bill_id=bill.bill_id) }}" class="btn btn-sm btn-secondary">Receipt</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5" class="empty-state">
+                No recent billing records found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

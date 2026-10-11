@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Prescriptions{% endblock %}
+{% block page_title %}Clinical Prescriptions & Orders{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Prescription Records</h3>
+    <a href="{{ url_for('prescriptions.add') }}" class="btn btn-primary btn-sm">+ Issue Prescription</a>
+  </div>
+  <div class="card-body">
+    <!-- Search Bar -->
+    <form method="GET" action="{{ url_for('prescriptions.index') }}" class="filter-bar">
+      <input 
+        type="text" 
+        name="search" 
+        value="{{ current_search }}" 
+        class="form-control" 
+        placeholder="Search patient, doctor, diagnosis, or prescription ID..." 
+        style="max-width: 420px;"
+      >
+      <button type="submit" class="btn btn-secondary">Search</button>
+      {% if current_search %}
+        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-secondary">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Prescription ID</th>
+            <th>Patient Name</th>
+            <th>Doctor</th>
+            <th>Diagnosis</th>
+            <th>Date Prescribed</th>
+            <th>Medications</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pr in prescriptions %}
+          <tr>
+            <td><strong>#{{ pr.prescription_id }}</strong></td>
+            <td>
+              <a href="{{ url_for('patients.detail', patient_id=pr.patient_id) }}">
+                <strong>{{ pr.patient_name }}</strong>
+              </a>
+              <div style="font-size: 11px; color: var(--text-muted);">{{ pr.patient_phone }}</div>
+            </td>
+            <td>{{ pr.doctor_name }}</td>
+            <td>{{ pr.diagnosis or 'Routine' }}</td>
+            <td>{{ pr.prescription_date | format_date }}</td>
+            <td>
+              <span class="badge badge-info">{{ pr.items_count }} items</span>
+            </td>
+            <td>
+              <a href="{{ url_for('prescriptions.detail', prescription_id=pr.prescription_id) }}" class="btn btn-sm btn-secondary">
+                View Rx
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="empty-state">
+              No prescriptions recorded matching your query.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

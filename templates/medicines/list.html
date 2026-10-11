@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Medicines{% endblock %}
+{% block page_title %}Medicine Inventory & Formulary{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Catalog Inventory Records</h3>
+    <a href="{{ url_for('medicines.add') }}" class="btn btn-primary btn-sm">+ Add Medicine</a>
+  </div>
+  <div class="card-body">
+    <!-- Filter Bar -->
+    <form method="GET" action="{{ url_for('medicines.index') }}" class="filter-bar">
+      <input 
+        type="text" 
+        name="search" 
+        value="{{ current_search }}" 
+        class="form-control" 
+        placeholder="Search medicine name, ID, or batch..." 
+        style="max-width: 280px;"
+      >
+
+      <select name="category" class="form-control" style="max-width: 180px;">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="stock_status" class="form-control" style="max-width: 180px;">
+        <option value="">All Stock & Expiry</option>
+        <option value="low" {% if current_stock_status == 'low' %}selected{% endif %}>Low Stock Only</option>
+        <option value="out" {% if current_stock_status == 'out' %}selected{% endif %}>Out of Stock</option>
+        <option value="expiring_soon" {% if current_stock_status == 'expiring_soon' %}selected{% endif %}>Expiring &lt; 60 Days</option>
+        <option value="expired" {% if current_stock_status == 'expired' %}selected{% endif %}>Expired Only</option>
+      </select>
+
+      <select name="sort_by" class="form-control" style="max-width: 160px;">
+        <option value="name_asc" {% if current_sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+        <option value="stock_asc" {% if current_sort == 'stock_asc' %}selected{% endif %}>Stock (Lowest)</option>
+        <option value="stock_desc" {% if current_sort == 'stock_desc' %}selected{% endif %}>Stock (Highest)</option>
+        <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Price (Lowest)</option>
+        <option value="expiry_asc" {% if current_sort == 'expiry_asc' %}selected{% endif %}>Expiry (Earliest)</option>
+      </select>
+
+      <button type="submit" class="btn btn-secondary">Apply Filters</button>
+      {% if current_search or current_category or current_stock_status or current_sort != 'name_asc' %}
+        <a href="{{ url_for('medicines.index') }}" class="btn btn-secondary">Reset</a>
+      {% endif %}
+    </form>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Medicine Name</th>
+            <th>Category</th>
+            <th>Batch No.</th>
+            <th>Price</th>
+            <th>Stock Available</th>
+            <th>Expiry Date</th>
+            <th>Alerts</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for med in medicines %}
+          <tr>
+            <td>#{{ med.medicine_id }}</td>
+            <td>
+              <a href="{{ url_for('medicines.detail', medicine_id=med.medicine_id) }}">
+                <strong>{{ med.medicine_name }}</strong>
+              </a>
+              <div style="font-size: 11px; color: var(--text-muted);">Supplier: {{ med.supplier_name }}</div>
+            </td>
+            <td>{{ med.category }}</td>
+            <td><code>{{ med.batch_number }}</code></td>
+            <td style="font-weight: 600;">{{ med.unit_price | currency }}</td>
+            <td>
+              <span style="font-weight: 600;">{{ med.quantity }}</span>
+              <span style="font-size: 11px; color: var(--text-muted);">(Min: {{ med.reorder_threshold }})</span>
+            </td>
+            <td>
+              {{ med.expiry_date | format_date }}
+              <div style="font-size: 11px; color: var(--text-muted);">
+                {% if med.days_to_expiry < 0 %}
+                  {{ (med.days_to_expiry * -1) }} days ago
+                {% else %}
+                  In {{ med.days_to_expiry }} days
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              {% if med.expiry_status_calc == 'EXPIRED' %}
+                <span class="badge badge-danger">Expired</span>
+              {% elif med.stock_status_calc == 'OUT_OF_STOCK' %}
+                <span class="badge badge-danger">Out of Stock</span>
+              {% elif med.stock_status_calc == 'LOW_STOCK' %}
+                <span class="badge badge-warning">Low Stock</span>
+              {% elif med.expiry_status_calc == 'EXPIRING_SOON' %}
+                <span class="badge badge-warning">Expiring Soon</span>
+              {% else %}
+                <span class="badge badge-success">Healthy</span>
+              {% endif %}
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <a href="{{ url_for('medicines.detail', medicine_id=med.medicine_id) }}" class="btn btn-sm btn-secondary">View</a>
+                <a href="{{ url_for('medicines.edit', medicine_id=med.medicine_id) }}" class="btn btn-sm btn-secondary">Edit</a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="9" class="empty-state">
+              No medicine inventory records found matching your query.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

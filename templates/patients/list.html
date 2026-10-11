@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Patients{% endblock %}
+{% block page_title %}Patient Clinical Registration Registry{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Hospital Patients</h3>
+    <a href="{{ url_for('patients.add') }}" class="btn btn-primary btn-sm">+ Register Patient</a>
+  </div>
+  <div class="card-body">
+    <!-- Search Bar -->
+    <form method="GET" action="{{ url_for('patients.index') }}" class="filter-bar">
+      <input 
+        type="text" 
+        name="search" 
+        value="{{ current_search }}" 
+        class="form-control" 
+        placeholder="Search patient name, ID, or phone..." 
+        style="max-width: 380px;"
+      >
+      <button type="submit" class="btn btn-secondary">Search</button>
+      {% if current_search %}
+        <a href="{{ url_for('patients.index') }}" class="btn btn-secondary">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Patient ID</th>
+            <th>Full Name</th>
+            <th>Age / Gender</th>
+            <th>Phone Contact</th>
+            <th>Prescriptions</th>
+            <th>Bills</th>
+            <th>Registration Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in patients %}
+          <tr>
+            <td>#{{ p.patient_id }}</td>
+            <td>
+              <a href="{{ url_for('patients.detail', patient_id=p.patient_id) }}">
+                <strong>{{ p.name }}</strong>
+              </a>
+              {% if p.address %}
+                <div style="font-size: 11px; color: var(--text-muted);">{{ p.address }}</div>
+              {% endif %}
+            </td>
+            <td>{{ p.age }} yrs &bull; {{ p.gender }}</td>
+            <td><code>{{ p.phone }}</code></td>
+            <td>
+              <span class="badge badge-info">{{ p.total_prescriptions }} pres</span>
+            </td>
+            <td>
+              <span class="badge badge-neutral">{{ p.total_bills }} bills</span>
+            </td>
+            <td>{{ p.created_at | format_date }}</td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <a href="{{ url_for('patients.detail', patient_id=p.patient_id) }}" class="btn btn-sm btn-secondary">History</a>
+                <a href="{{ url_for('patients.edit', patient_id=p.patient_id) }}" class="btn btn-sm btn-secondary">Edit</a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="empty-state">
+              No patients found matching your search.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

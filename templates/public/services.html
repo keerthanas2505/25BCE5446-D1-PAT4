@@ -1,0 +1,127 @@
+{% extends "base_public.html" %}
+
+{% block title %}Hospital Pharmacy Services - RxCare{% endblock %}
+
+{% block content %}
+<section class="page-header-banner">
+  <div class="banner-container">
+    <span class="banner-kicker">Clinical & Dispensary Operations</span>
+    <h1>Hospital Pharmacy Services</h1>
+    <p>Comprehensive pharmaceutical care for outpatients, admitted patients, and emergency departments at Metropolitan Hospital.</p>
+  </div>
+</section>
+
+<section class="public-section">
+  <div class="section-container">
+    <div class="services-detail-grid">
+
+      <!-- Service 1 -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-badge-num">01</div>
+          <h3>Inpatient Unit-Dose Dispensing</h3>
+        </div>
+        <p>
+          Admitted patients receive customized, pre-packaged unit-dose medications distributed directly to clinical wards and intensive care units. Every dose is labeled with patient details, drug name, strength, and administration time to prevent bedside medication errors.
+        </p>
+        <div class="service-features">
+          <span class="feature-tag">Daily Ward Rounds</span>
+          <span class="feature-tag">Nurse Verification</span>
+          <span class="feature-tag">ICU Support</span>
+        </div>
+      </div>
+
+      <!-- Service 2 -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-badge-num">02</div>
+          <h3>Outpatient Dispensary Counter</h3>
+        </div>
+        <p>
+          Convenient, organized dispensary service for clinic outpatients and discharged patients. Operating with serialized electronic queuing, computerized invoices, and clear labeling indicating dosage and administration instructions.
+        </p>
+        <div class="service-features">
+          <span class="feature-tag">Hours: 8:00 AM – 10:00 PM</span>
+          <span class="feature-tag">GST Tax Invoices</span>
+          <span class="feature-tag">Multiple Payment Modes</span>
+        </div>
+      </div>
+
+      <!-- Service 3 -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-badge-num">03</div>
+          <h3>Emergency Formulary (24 / 7)</h3>
+        </div>
+        <p>
+          Immediate round-the-clock availability for critical interventions: intravenous vasopressors, cardiac emergency drugs, antidotes, critical analgesics, and resuscitation medications stocked within the trauma bay and central hospital pharmacy.
+        </p>
+        <div class="service-features">
+          <span class="feature-tag">24/7 Dedicated Staff</span>
+          <span class="feature-tag">Code Blue Support</span>
+          <span class="feature-tag">Rapid Dispense</span>
+        </div>
+      </div>
+
+      <!-- Service 4 -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-badge-num">04</div>
+          <h3>Medication Counseling & Education</h3>
+        </div>
+        <p>
+          Dedicated consultation booth where clinical pharmacists explain medication regimens, proper inhaler techniques, insulin injection handling, potential side effects, and dietary precautions to ensure maximum treatment efficacy.
+        </p>
+        <div class="service-features">
+          <span class="feature-tag">Confidential Counseling</span>
+          <span class="feature-tag">Drug Interaction Checks</span>
+          <span class="feature-tag">Chronic Disease Guidance</span>
+        </div>
+      </div>
+
+      <!-- Service 5 -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-badge-num">05</div>
+          <h3>Temperature-Controlled Cold Chain</h3>
+        </div>
+        <p>
+          State-of-the-art medical refrigerators equipped with calibrated digital data loggers maintained strictly between 2°C and 8°C. Guarantees the potency of vaccines, insulins, monoclonal antibodies, and temperature-sensitive biologicals.
+        </p>
+        <div class="service-features">
+          <span class="feature-tag">2°C to 8°C Storage</span>
+          <span class="feature-tag">Power Backup</span>
+          <span class="feature-tag">Cold-Pack Transport</span>
+        </div>
+      </div>
+
+      <!-- Service 6 -->
+      <div class="service-detail-card">
+        <div class="service-detail-header">
+          <div class="service-badge-num">06</div>
+          <h3>Hospital Formulary Management</h3>
+        </div>
+        <p>
+          The Pharmacy and Therapeutics Committee routinely reviews hospital drug selections to guarantee evidence-based, therapeutically superior, and cost-effective medications for our patient community.
+        </p>
+        <div class="service-features">
+          <span class="feature-tag">Evidence-Based</span>
+          <span class="feature-tag">Quality Assured</span>
+          <span class="feature-tag">Oracle XE Tracked</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="action-banner-box mt-4">
+      <div class="action-banner-text">
+        <h3>Looking for a Specific Medicine?</h3>
+        <p>Search our public hospital formulary to check medication descriptions and availability.</p>
+      </div>
+      <div class="action-banner-button">
+        <a href="{{ url_for('public.catalog') }}" class="btn btn-primary btn-lg">Browse Medicine Catalog</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

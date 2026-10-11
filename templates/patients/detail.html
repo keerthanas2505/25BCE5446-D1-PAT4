@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}{{ patient.name }}{% endblock %}
+{% block page_title %}{{ patient.name }} - Patient File #{{ patient.patient_id }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+  <a href="{{ url_for('patients.index') }}" class="btn btn-secondary">&larr; Back to Patient Registry</a>
+  <div style="display: flex; gap: 8px;">
+    <a href="{{ url_for('patients.edit', patient_id=patient.patient_id) }}" class="btn btn-secondary">Edit Patient</a>
+    <form method="POST" action="{{ url_for('patients.delete', patient_id=patient.patient_id) }}" onsubmit="return confirmDelete('patient');" style="display: inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger">Delete Record</button>
+    </form>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 320px 1fr; gap: 24px;">
+  <!-- Left: Patient Demographics Card -->
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Patient Profile</h3>
+        <span class="badge badge-neutral">ID #{{ patient.patient_id }}</span>
+      </div>
+      <div class="card-body">
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 12px; color: var(--text-muted);">Patient Name</div>
+          <div style="font-weight: 700; font-size: 16px; color: var(--primary-navy);">{{ patient.name }}</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <div style="font-size: 12px; color: var(--text-muted);">Age</div>
+            <div style="font-weight: 600;">{{ patient.age }} Years</div>
+          </div>
+          <div>
+            <div style="font-size: 12px; color: var(--text-muted);">Gender</div>
+            <div style="font-weight: 600;">{{ patient.gender }}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 12px; color: var(--text-muted);">Phone Number</div>
+          <div><code>{{ patient.phone }}</code></div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+          <div style="font-size: 12px; color: var(--text-muted);">Residential Address</div>
+          <div style="font-size: 13px; color: #334155;">{{ patient.address or 'No address recorded.' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <a href="{{ url_for('prescriptions.add') }}" class="btn btn-primary" style="width: 100%;">
+        + Issue Prescription
+      </a>
+      <a href="{{ url_for('billing.new') }}" class="btn btn-secondary" style="width: 100%;">
+        + Generate New Bill
+      </a>
+    </div>
+  </div>
+
+  <!-- Right: Prescriptions & Billing History -->
+  <div>
+    <!-- Prescriptions History -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Clinical Prescriptions ({{ prescriptions | length }})</h3>
+        <a href="{{ url_for('prescriptions.add') }}" class="btn btn-sm btn-secondary">+ New Prescription</a>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Prescription #</th>
+                <th>Prescribed Date</th>
+                <th>Doctor</th>
+                <th>Clinical Diagnosis</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pr in prescriptions %}
+              <tr>
+                <td><strong>#{{ pr.prescription_id }}</strong></td>
+                <td>{{ pr.prescription_date | format_date }}</td>
+                <td>{{ pr.doctor_name }}</td>
+                <td>{{ pr.diagnosis or 'Routine' }}</td>
+                <td>
+                  <a href="{{ url_for('prescriptions.detail', prescription_id=pr.prescription_id) }}" class="btn btn-sm btn-secondary">View Details</a>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="empty-state">No prescriptions recorded for this patient.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bills History -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Billing & Dispensing History ({{ bills | length }})</h3>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Invoice Date</th>
+                <th>Payment Mode</th>
+                <th>Total Billed</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in bills %}
+              <tr>
+                <td><strong>{{ b.bill_number }}</strong></td>
+                <td>{{ b.bill_date | format_date }}</td>
+                <td><span class="badge badge-info">{{ b.payment_method }}</span></td>
+                <td style="font-weight: 600; color: var(--primary-navy);">{{ b.total_amount | currency }}</td>
+                <td>
+                  <a href="{{ url_for('billing.invoice', bill_id=b.bill_id) }}" class="btn btn-sm btn-secondary">Print Receipt</a>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="empty-state">No bills recorded for this patient.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

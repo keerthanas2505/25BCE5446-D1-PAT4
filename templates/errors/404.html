@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Not Found (404){% endblock %}
+{% block page_title %}404 - Record or Page Not Found{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 30px;">
+  <div style="font-size: 32px; font-weight: 700; color: var(--primary-navy); margin-bottom: 12px;">404</div>
+  <h3 style="font-size: 18px; color: var(--primary-navy); margin-bottom: 8px;">Resource Not Found</h3>
+  <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+    The requested database record, formulary entry, or endpoint could not be found.
+  </p>
+  <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Return to Dashboard</a>
+</div>
+{% endblock %}

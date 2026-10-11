@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Issue Prescription{% endblock %}
+{% block page_title %}Clinical Prescription Entry Form{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 900px; margin: 0 auto;">
+  <div class="card-header">
+    <h3 class="card-title">New Prescription Record</h3>
+    <a href="{{ url_for('prescriptions.index') }}" class="btn btn-sm btn-secondary">Back to List</a>
+  </div>
+  <div class="card-body">
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="patient_id">Registered Patient *</label>
+          <select id="patient_id" name="patient_id" class="form-control" required>
+            <option value="">Select Patient</option>
+            {% for p in patients %}
+              <option value="{{ p.patient_id }}" {% if form_data.patient_id|string == p.patient_id|string %}selected{% endif %}>
+                {{ p.name }} ({{ p.phone }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="doctor_name">Prescribing Physician *</label>
+          <input 
+            type="text" 
+            id="doctor_name" 
+            name="doctor_name" 
+            class="form-control" 
+            value="{{ form_data.doctor_name or '' }}" 
+            placeholder="e.g. Dr. K. Swaminathan, MD" 
+            required
+          >
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="diagnosis">Clinical Diagnosis / Indication</label>
+          <input 
+            type="text" 
+            id="diagnosis" 
+            name="diagnosis" 
+            class="form-control" 
+            value="{{ form_data.diagnosis or '' }}" 
+            placeholder="e.g. Acute Bronchitis"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prescription_date">Date of Consultation</label>
+          <input 
+            type="date" 
+            id="prescription_date" 
+            name="prescription_date" 
+            class="form-control" 
+            value="{{ form_data.prescription_date or now.strftime('%Y-%m-%d') }}"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="notes">Physician Remarks / Dietary Notes</label>
+        <textarea 
+          id="notes" 
+          name="notes" 
+          class="form-control" 
+          rows="2" 
+          placeholder="e.g. Drink plenty of warm fluids. Review in 5 days."
+        >{{ form_data.notes or '' }}</textarea>
+      </div>
+
+      <!-- Prescribed Medicines Dynamic Section -->
+      <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h4 style="font-size: 14px; font-weight: 600; color: var(--primary-navy);">
+            Prescribed Medications & Dosages *
+          </h4>
+          <button type="button" id="add-pres-row-btn" class="btn btn-sm btn-secondary">
+            + Add Another Medicine
+          </button>
+        </div>
+
+        <div id="prescription-items-container">
+          <!-- Initial Row -->
+          <div class="pres-item-row" style="display: grid; grid-template-columns: 2fr 3fr 1fr 40px; gap: 10px; margin-bottom: 10px; background-color: #f8fafc; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); align-items: center;">
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 2px;">Medicine</label>
+              <select name="medicine_id[]" class="form-control" required>
+                <option value="">Select Drug</option>
+                {% for m in medicines %}
+                  <option value="{{ m.medicine_id }}">{{ m.medicine_name }} (Stock: {{ m.quantity }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 2px;">Dosage & Instructions</label>
+              <input type="text" name="dosage[]" class="form-control" placeholder="e.g. 1 tab twice daily after meals" required>
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 2px;">Qty</label>
+              <input type="number" name="quantity[]" class="form-control" min="1" value="10" required>
+            </div>
+            <div>
+              <label style="font-size: 11px; display: block; margin-bottom: 2px;">&nbsp;</label>
+              <button type="button" class="btn btn-sm btn-danger remove-pres-row-btn" title="Remove">&times;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 24px;">
+        <button type="submit" class="btn btn-primary">
+          Commit & Save Prescription
+        </button>
+        <a href="{{ url_for('prescriptions.index') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Dynamic Template for New Prescription Rows -->
+<template id="prescription-row-template">
+  <div class="pres-item-row" style="display: grid; grid-template-columns: 2fr 3fr 1fr 40px; gap: 10px; margin-bottom: 10px; background-color: #f8fafc; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); align-items: center;">
+    <div>
+      <select name="medicine_id[]" class="form-control" required>
+        <option value="">Select Drug</option>
+        {% for m in medicines %}
+          <option value="{{ m.medicine_id }}">{{ m.medicine_name }} (Stock: {{ m.quantity }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <input type="text" name="dosage[]" class="form-control" placeholder="e.g. 1 tab twice daily after meals" required>
+    </div>
+    <div>
+      <input type="number" name="quantity[]" class="form-control" min="1" value="10" required>
+    </div>
+    <div>
+      <button type="button" class="btn btn-sm btn-danger remove-pres-row-btn" title="Remove">&times;</button>
+    </div>
+  </div>
+</template>
+{% endblock %}

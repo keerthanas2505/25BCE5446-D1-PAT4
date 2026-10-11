@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none">
+  <!-- Rounded Shield / Capsule Container -->
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="#0f2b5c" />
+  <!-- Medical Cross Horizontal Bar -->
+  <rect x="10" y="19" width="28" height="10" rx="3" fill="#ffffff" />
+  <!-- Medical Cross Vertical Bar -->
+  <rect x="19" y="10" width="10" height="28" rx="3" fill="#ffffff" />
+  <!-- Vibrant Medical Cyan Accent Inset -->
+  <circle cx="24" cy="24" r="3.5" fill="#0284c7" />
+  <!-- Diagonal Rx Slit Accent -->
+  <path d="M14 14L18 18M30 30L34 34" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round" />
+</svg>

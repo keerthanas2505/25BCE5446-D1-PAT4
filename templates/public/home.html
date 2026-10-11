@@ -1,0 +1,226 @@
+{% extends "base_public.html" %}
+
+{% block title %}Home - Your Health, Our Priority{% endblock %}
+
+{% block content %}
+<section class="public-hero">
+  <div class="hero-container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>Metropolitan Hospital Clinical Pharmacy Services</span>
+      </div>
+      <h1 class="hero-title">Your Health, <span class="text-teal">Our Priority</span></h1>
+      <p class="hero-lead">
+        Welcome to RxCare, the institutional pharmacy management facility serving Metropolitan Hospital. We deliver verified hospital medicine dispensing, real-time formulary governance, and expert clinical pharmacotherapy support directly backed by Oracle Database XE 21c.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="{{ url_for('public.catalog') }}" class="btn btn-primary btn-lg">
+          Browse Medicine Formulary
+        </a>
+        <a href="{{ url_for('public.lookup') }}" class="btn btn-outline-primary btn-lg">
+          Verify Prescription Status
+        </a>
+      </div>
+
+      <div class="hero-trust-badges">
+        <div class="trust-badge-item">
+          <strong>24 / 7</strong>
+          <span>Inpatient Dispensary</span>
+        </div>
+        <div class="trust-badge-item">
+          <strong>100%</strong>
+          <span>Verified Formulary</span>
+        </div>
+        <div class="trust-badge-item">
+          <strong>Zero</strong>
+          <span>Dispensing Compromise</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-card-panel">
+      <div class="service-highlight-card">
+        <div class="card-tag">Hospital Formulary Summary</div>
+        <h3>Trusted Patient Care</h3>
+        <p>Access our current therapeutic categories and verify medicine availability before visiting the outpatient dispensary.</p>
+        
+        <div class="metric-row">
+          <div class="metric-box">
+            <span class="metric-num">{{ total_categories }}</span>
+            <span class="metric-lbl">Therapeutic Categories</span>
+          </div>
+          <div class="metric-box">
+            <span class="metric-num">{{ available_medicines }}</span>
+            <span class="metric-lbl">Active Formulations</span>
+          </div>
+        </div>
+
+        <div class="hero-quick-notice">
+          <strong>Direct Hospital Dispensary Notice:</strong>
+          <span>All prescription drugs are dispensed solely against valid medical doctor orders in compliance with hospital protocols.</span>
+        </div>
+
+        <div class="hero-quick-action">
+          <a href="{{ url_for('public.lookup') }}" class="lookup-btn-link">
+            Have a Prescription? Check Status &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Core Clinical Services -->
+<section class="public-section bg-light">
+  <div class="section-container">
+    <div class="section-header text-center">
+      <span class="section-kicker">Comprehensive Healthcare</span>
+      <h2 class="section-title">Hospital Pharmacy Services</h2>
+      <p class="section-subtitle">Delivering precision medication management and patient safety across both outpatient and inpatient care units.</p>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#0f2b5c" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        </div>
+        <h3>Inpatient Unit-Dose Dispensing</h3>
+        <p>Direct supply to intensive care, surgical suites, and inpatient hospital wards with rigorous multi-stage dosage checks and nurse verification.</p>
+        <a href="{{ url_for('public.services') }}" class="service-link">Learn More &rarr;</a>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#0f2b5c" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h10M7 16h6"/></svg>
+        </div>
+        <h3>Outpatient Dispensing Counter</h3>
+        <p>Rapid, organized prescription fulfillment for clinic outpatients, complete with computerised tax invoices and crystal-clear dosage schedules.</p>
+        <a href="{{ url_for('public.services') }}" class="service-link">Learn More &rarr;</a>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#0f2b5c" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Emergency & Critical Formulary</h3>
+        <p>Guaranteed 24/7 availability of critical care infusions, antiarrhythmics, emergency analgesics, and essential emergency medicines.</p>
+        <a href="{{ url_for('public.services') }}" class="service-link">Learn More &rarr;</a>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon-wrap">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#0f2b5c" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        </div>
+        <h3>Clinical Medication Counseling</h3>
+        <p>Registered hospital pharmacists counsel patients on medication timing, potential interactions, proper storage, and adherence support.</p>
+        <a href="{{ url_for('public.services') }}" class="service-link">Learn More &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Responsible Medicine Use & Safety Standards -->
+<section class="public-section">
+  <div class="section-container">
+    <div class="two-column-layout">
+      <div class="column-text">
+        <span class="section-kicker">Clinical Safety Protocols</span>
+        <h2 class="section-title">Patient Medication Safety & Standards</h2>
+        <p class="lead-text">
+          At RxCare, patient well-being is safeguarded through stringent verification at every phase of the dispensing cycle.
+        </p>
+
+        <ul class="safety-checklist">
+          <li>
+            <div class="check-icon">&#10003;</div>
+            <div>
+              <strong>Doctor Prescription Verification:</strong>
+              <span>Every prescription is authenticated against clinical diagnosis, dosage appropriateness, and patient history prior to dispensing.</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">&#10003;</div>
+            <div>
+              <strong>Expiry & Quality Assurance Alerts:</strong>
+              <span>Our Oracle database tracks expiry dates down to individual batches. Expired or near-expiry medicines are locked from billing.</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">&#10003;</div>
+            <div>
+              <strong>The Five Rights of Clinical Dispensing:</strong>
+              <span>Right Patient, Right Medication, Right Dose, Right Route, and Right Time are systematically verified for every order.</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">&#10003;</div>
+            <div>
+              <strong>Antibiotic & Antimicrobial Stewardship:</strong>
+              <span>We advocate responsible antibiotic usage. Medications are dispensed strictly for the prescribed course to prevent antimicrobial resistance.</span>
+            </div>
+          </li>
+        </ul>
+
+        <div class="mt-4">
+          <a href="{{ url_for('public.guide') }}" class="btn btn-primary">
+            Read Our Medication Guide &rarr;
+          </a>
+        </div>
+      </div>
+
+      <div class="column-aside">
+        <div class="safety-info-card">
+          <div class="safety-card-header">
+            <h4>Dispensing & Counter Guidelines</h4>
+          </div>
+          <div class="safety-card-body">
+            <div class="step-item">
+              <span class="step-num">1</span>
+              <div>
+                <strong>Present Your Medical Prescription</strong>
+                <p>Present your original prescription issued by a qualified medical practitioner at the reception counter.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <span class="step-num">2</span>
+              <div>
+                <strong>Pharmacist Verification & Billing</strong>
+                <p>A licensed pharmacist checks dosage, confirms stock in Oracle XE, and generates a serialized itemized bill.</p>
+              </div>
+            </div>
+            <div class="step-item">
+              <span class="step-num">3</span>
+              <div>
+                <strong>Medication Counseling & Delivery</strong>
+                <p>Receive your labeled medications with verbal counseling on administration frequency, food interactions, and precautions.</p>
+              </div>
+            </div>
+          </div>
+          <div class="safety-card-footer">
+            <span>Questions about your medication? Call our dispensary desk: <strong>+91 44 3993 1555</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Public Transparency Notice -->
+<section class="public-section bg-light-blue">
+  <div class="section-container text-center">
+    <div class="transparency-banner">
+      <h3>Accurate, Transparent Information</h3>
+      <p>
+        RxCare provides genuine hospital formulary information. In-person pharmacy billing, prescription fulfillment, and medication collection take place at the Metropolitan Hospital Pharmacy counter. We do not engage in unauthorized online courier deliveries or unregulated drug sales.
+      </p>
+      <div class="mt-3">
+        <a href="{{ url_for('public.contact') }}" class="btn btn-outline-primary">
+          View Hospital Location & Counter Hours
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

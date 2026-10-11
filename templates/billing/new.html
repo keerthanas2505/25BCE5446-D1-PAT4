@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}New Sale & Billing{% endblock %}
+{% block page_title %}Pharmacy Dispensing & Billing Counter (POS){% endblock %}
+
+{% block content %}
+<form method="POST" id="billing-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px;">
+    <!-- Left: Customer Selection & Multi-Item Dispensing -->
+    <div>
+      <!-- Customer Information Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">1. Patient / Customer Selection</h3>
+        </div>
+        <div class="card-body">
+          <div style="display: flex; gap: 20px; margin-bottom: 16px;">
+            <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;">
+              <input type="radio" name="customer_type" id="cust_type_walkin" value="walkin" checked>
+              Walk-in Customer (Over the Counter)
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-weight: 600; cursor: pointer;">
+              <input type="radio" name="customer_type" id="cust_type_patient" value="patient">
+              Registered Hospital Patient
+            </label>
+          </div>
+
+          <!-- Walk-in Input Group -->
+          <div id="walkin_name_group" class="form-group">
+            <label class="form-label" for="walkin_name">Customer / Patient Name (Optional)</label>
+            <input 
+              type="text" 
+              id="walkin_name" 
+              name="walkin_name" 
+              class="form-control" 
+              placeholder="e.g. S. Kumar (or leave blank for generic Walk-in)"
+            >
+          </div>
+
+          <!-- Registered Patient Select Group -->
+          <div id="patient_select_group" class="form-group" style="display: none;">
+            <label class="form-label" for="patient_id">Select Registered Hospital Patient *</label>
+            <select id="patient_id" name="patient_id" class="form-control">
+              <option value="">Select Patient from Hospital Registry</option>
+              {% for p in patients %}
+                <option value="{{ p.patient_id }}">{{ p.name }} &bull; {{ p.phone }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medication Items Selection Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">2. Medication Dispensing Lines</h3>
+          <button type="button" id="add-billing-row-btn" class="btn btn-sm btn-secondary">
+            + Add Another Medicine
+          </button>
+        </div>
+        <div class="card-body">
+          <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: grid; grid-template-columns: 3fr 1fr 1fr 1.2fr 40px; gap: 12px; padding: 0 10px;">
+            <span>MEDICINE & BATCH</span>
+            <span>UNIT PRICE</span>
+            <span>QUANTITY</span>
+            <span>LINE TOTAL</span>
+            <span></span>
+          </div>
+
+          <!-- Dynamic Billing Items Container -->
+          <div id="billing-items-container">
+            <!-- Initial Line Row -->
+            <div class="billing-item-row" data-unit-price="0" data-max-stock="0" data-line-total="0">
+              <div>
+                <select name="medicine_id[]" class="form-control medicine-select" required>
+                  <option value="">Select Available Medicine</option>
+                  {% for m in active_medicines %}
+                    <option value="{{ m.medicine_id }}">{{ m.medicine_name }} [Batch: {{ m.batch_number }}]</option>
+                  {% endfor %}
+                </select>
+                <div class="stock-info" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;"></div>
+              </div>
+              <div class="price-display" style="font-weight: 600; font-size: 13px;">₹ 0.00</div>
+              <div>
+                <input type="number" name="quantity[]" class="form-control qty-input" min="1" value="1" required>
+              </div>
+              <div class="line-total-display" style="font-weight: 700; color: var(--primary-navy); font-size: 14px;">₹ 0.00</div>
+              <div>
+                <button type="button" class="btn btn-sm btn-danger remove-row-btn" title="Remove">&times;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Calculation, Discounts, Tax & Checkout Card -->
+    <div>
+      <div class="card" style="position: sticky; top: 88px;">
+        <div class="card-header">
+          <h3 class="card-title">3. Payment & Invoicing</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label" for="payment_method">Payment Mode</label>
+            <select id="payment_method" name="payment_method" class="form-control" required>
+              <option value="CASH">Cash Counter</option>
+              <option value="UPI">UPI / Digital QR</option>
+              <option value="CARD">Debit / Credit Card</option>
+            </select>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="discount_pct">Discount (%)</label>
+              <input type="number" step="0.5" min="0" max="100" id="discount_pct" name="discount_pct" class="form-control" value="0.0">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="tax_pct">GST / Tax (%)</label>
+              <input type="number" step="0.5" min="0" max="100" id="tax_pct" name="tax_pct" class="form-control" value="0.0">
+            </div>
+          </div>
+
+          <!-- Live Breakdown Box -->
+          <div class="billing-summary-box">
+            <div class="summary-row">
+              <span style="color: var(--text-muted);">Gross Subtotal:</span>
+              <strong id="summary-subtotal">₹ 0.00</strong>
+            </div>
+            <div class="summary-row">
+              <span style="color: var(--text-muted);">Special Discount:</span>
+              <span id="summary-discount" style="color: var(--status-success);">- ₹ 0.00 (0%)</span>
+            </div>
+            <div class="summary-row">
+              <span style="color: var(--text-muted);">Applicable GST:</span>
+              <span id="summary-tax" style="color: var(--text-muted);">+ ₹ 0.00 (0%)</span>
+            </div>
+            <div class="summary-row total">
+              <span>Final Payable:</span>
+              <span id="summary-grand-total">₹ 0.00</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-weight: 600; font-size: 14px;">
+              Process Transaction & Print
+            </button>
+          </div>
+
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 12px; line-height: 1.4;">
+            &bull; Stock is locked (<code>FOR UPDATE</code>) and deducted atomically.<br>
+            &bull; Server strictly recalculates authoritative prices.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Row Template for Adding Items via Vanilla JS -->
+<template id="billing-row-template">
+  <div class="billing-item-row" data-unit-price="0" data-max-stock="0" data-line-total="0">
+    <div>
+      <select name="medicine_id[]" class="form-control medicine-select" required>
+        <option value="">Select Available Medicine</option>
+        {% for m in active_medicines %}
+          <option value="{{ m.medicine_id }}">{{ m.medicine_name }} [Batch: {{ m.batch_number }}]</option>
+        {% endfor %}
+      </select>
+      <div class="stock-info" style="font-size: 11px; color: var(--text-muted); margin-top: 4px;"></div>
+    </div>
+    <div class="price-display" style="font-weight: 600; font-size: 13px;">₹ 0.00</div>
+    <div>
+      <input type="number" name="quantity[]" class="form-control qty-input" min="1" value="1" required>
+    </div>
+    <div class="line-total-display" style="font-weight: 700; color: var(--primary-navy); font-size: 14px;">₹ 0.00</div>
+    <div>
+      <button type="button" class="btn btn-sm btn-danger remove-row-btn" title="Remove">&times;</button>
+    </div>
+  </div>
+</template>
+{% endblock %}
