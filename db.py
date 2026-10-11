@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 DB_USER = os.getenv("DB_USER", "pharmacy_user")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "PharmacyPass123")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_PORT = int(os.getenv("DB_PORT", 1521))
 DB_SERVICE_NAME = os.getenv("DB_SERVICE_NAME", "xepdb1")
