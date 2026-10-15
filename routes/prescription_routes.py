@@ -5,9 +5,9 @@ Hospital Pharmacy Management System (HPMS)
 
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-import oracledb
+import psycopg2
 from auth import login_required
-from db import get_db_cursor, execute_query
+from db import get_db_cursor, execute_query, row_to_dict
 
 prescription_bp = Blueprint("prescriptions", __name__, url_prefix="/prescriptions")
 
@@ -33,7 +33,7 @@ def index():
     """
     params = {}
     if search:
-        sql += " AND (LOWER(p.name) LIKE :s OR LOWER(pr.doctor_name) LIKE :s OR LOWER(pr.diagnosis) LIKE :s OR TO_CHAR(pr.prescription_id) = :s_exact)"
+        sql += " AND (LOWER(p.name) LIKE :s OR LOWER(pr.doctor_name) LIKE :s OR LOWER(pr.diagnosis) LIKE :s OR CAST(pr.prescription_id AS TEXT) = :s_exact)"
         params["s"] = f"%{search.lower()}%"
         params["s_exact"] = search
 
@@ -97,7 +97,7 @@ def add():
         """
         SELECT medicine_id, medicine_name, quantity, unit_price 
         FROM MEDICINE 
-        WHERE expiry_date >= TRUNC(CURRENT_DATE)
+        WHERE expiry_date >= CURRENT_DATE
         ORDER BY medicine_name ASC
         """,
         fetchall=True
@@ -162,33 +162,30 @@ def add():
                 form_data=request.form
             )
 
-        # Atomic transaction insertion
+        # Atomic transaction insertion — PostgreSQL RETURNING clause
         try:
             with get_db_cursor(commit=True) as (conn, cursor):
-                # Out parameter for generated identity ID
-                out_id_var = cursor.var(oracledb.NUMBER)
                 cursor.execute(
                     """
                     INSERT INTO PRESCRIPTION (patient_id, doctor_name, diagnosis, prescription_date, notes)
-                    VALUES (:pid, :doc, :diag, TO_DATE(:pdate, 'YYYY-MM-DD'), :notes)
-                    RETURNING prescription_id INTO :out_id
+                    VALUES (%(pid)s, %(doc)s, %(diag)s, %(pdate)s, %(notes)s)
+                    RETURNING prescription_id
                     """,
                     {
                         "pid": int(patient_id),
                         "doc": doctor_name,
                         "diag": diagnosis,
-                        "pdate": pres_date.strftime("%Y-%m-%d"),
+                        "pdate": pres_date,
                         "notes": notes,
-                        "out_id": out_id_var
                     }
                 )
-                new_pres_id = int(out_id_var.getvalue()[0])
+                new_pres_id = cursor.fetchone()["prescription_id"]
 
                 for itm in valid_items:
                     cursor.execute(
                         """
                         INSERT INTO PRESCRIPTION_ITEMS (prescription_id, medicine_id, dosage, quantity)
-                        VALUES (:pres_id, :med_id, :dosage, :qty)
+                        VALUES (%(pres_id)s, %(med_id)s, %(dosage)s, %(qty)s)
                         """,
                         {
                             "pres_id": new_pres_id,

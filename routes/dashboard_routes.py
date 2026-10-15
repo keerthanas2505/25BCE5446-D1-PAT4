@@ -76,7 +76,7 @@ def index():
         SELECT bill_id, bill_number, customer_name, total_amount, payment_method, bill_date
         FROM BILL
         ORDER BY bill_date DESC
-        FETCH FIRST 5 ROWS ONLY
+        LIMIT 5
         """,
         fetchall=True
     )
@@ -98,7 +98,7 @@ def index():
         WHERE m.quantity <= m.reorder_threshold 
            OR m.expiry_date <= TRUNC(CURRENT_DATE) + 60
         ORDER BY m.quantity ASC, m.expiry_date ASC
-        FETCH FIRST 6 ROWS ONLY
+        LIMIT 6
         """,
         fetchall=True
     )

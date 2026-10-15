@@ -4,7 +4,7 @@ Hospital Pharmacy Management System (HPMS)
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-import oracledb
+import psycopg2
 from auth import login_required
 from db import execute_query
 
@@ -221,6 +221,6 @@ def delete(supplier_id):
         execute_query("DELETE FROM SUPPLIER WHERE supplier_id = :id", {"id": supplier_id}, commit=True)
         flash("Supplier deleted safely.", "success")
         return redirect(url_for("suppliers.index"))
-    except oracledb.DatabaseError as e:
+    except psycopg2.Error as e:
         flash(f"Database error deleting supplier: {e}", "danger")
         return redirect(url_for("suppliers.detail", supplier_id=supplier_id))

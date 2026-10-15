@@ -134,7 +134,8 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
+    host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", 5000))
     debug_mode = os.getenv("FLASK_DEBUG", "1") == "1"
-    print(f">> Launching Hospital Pharmacy Management System on http://127.0.0.1:{port}")
-    app.run(host="127.0.0.1", port=port, debug=debug_mode)
+    print(f">> Launching Hospital Pharmacy Management System on http://{host}:{port}")
+    app.run(host=host, port=port, debug=debug_mode)

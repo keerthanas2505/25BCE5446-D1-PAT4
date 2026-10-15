@@ -4,7 +4,7 @@ Hospital Pharmacy Management System (HPMS)
 """
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-import oracledb
+import psycopg2
 from auth import login_required
 from db import execute_query
 
@@ -32,7 +32,7 @@ def index():
     """
     params = {}
     if search:
-        sql += " AND (LOWER(p.name) LIKE :s OR LOWER(p.phone) LIKE :s OR TO_CHAR(p.patient_id) = :s_exact)"
+        sql += " AND (LOWER(p.name) LIKE :s OR LOWER(p.phone) LIKE :s OR CAST(p.patient_id AS TEXT) = :s_exact)"
         params["s"] = f"%{search.lower()}%"
         params["s_exact"] = search
 
@@ -213,6 +213,6 @@ def delete(patient_id):
         execute_query("DELETE FROM PATIENT WHERE patient_id = :id", {"id": patient_id}, commit=True)
         flash("Patient record deleted safely.", "success")
         return redirect(url_for("patients.index"))
-    except oracledb.DatabaseError as e:
+    except psycopg2.Error as e:
         flash(f"Database error deleting patient: {e}", "danger")
         return redirect(url_for("patients.detail", patient_id=patient_id))

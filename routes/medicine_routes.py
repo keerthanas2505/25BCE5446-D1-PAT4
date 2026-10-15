@@ -5,7 +5,7 @@ Hospital Pharmacy Management System (HPMS)
 
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-import oracledb
+import psycopg2
 from auth import login_required
 from db import execute_query
 
@@ -50,7 +50,7 @@ def index():
     params = {}
 
     if search:
-        sql += " AND (LOWER(m.medicine_name) LIKE :search OR TO_CHAR(m.medicine_id) = :search_exact OR LOWER(m.batch_number) LIKE :search)"
+        sql += " AND (LOWER(m.medicine_name) LIKE :search OR CAST(m.medicine_id AS TEXT) = :search_exact OR LOWER(m.batch_number) LIKE :search)"
         params["search"] = f"%{search.lower()}%"
         params["search_exact"] = search
 
@@ -142,7 +142,7 @@ def detail(medicine_id):
         JOIN BILL b ON bi.bill_id = b.bill_id
         WHERE bi.medicine_id = :mid
         ORDER BY b.bill_date DESC
-        FETCH FIRST 10 ROWS ONLY
+        LIMIT 10
         """,
         {"mid": medicine_id},
         fetchall=True
@@ -424,6 +424,6 @@ def delete(medicine_id):
         )
         flash("Medicine record deleted safely from inventory.", "success")
         return redirect(url_for("medicines.index"))
-    except oracledb.DatabaseError as e:
+    except psycopg2.Error as e:
         flash(f"Database error deleting medicine: {e}", "danger")
         return redirect(url_for("medicines.detail", medicine_id=medicine_id))

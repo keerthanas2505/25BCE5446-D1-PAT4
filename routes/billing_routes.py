@@ -10,9 +10,9 @@ and printable tax invoice generation.
 from datetime import datetime
 import secrets
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
-import oracledb
+import psycopg2
 from auth import login_required
-from db import get_db_cursor, execute_query, row_to_dict
+from db import get_db_cursor, execute_query, row_to_dict, prepare_sql
 
 billing_bp = Blueprint("billing", __name__, url_prefix="/billing")
 
@@ -209,7 +209,7 @@ def new():
                         """
                         SELECT medicine_id, medicine_name, unit_price, quantity, expiry_date
                         FROM MEDICINE
-                        WHERE medicine_id = :mid
+                        WHERE medicine_id = %(mid)s
                         FOR UPDATE
                         """,
                         {"mid": itm["medicine_id"]}
@@ -260,17 +260,16 @@ def new():
                 random_suffix = secrets.token_hex(2).upper()
                 bill_number = f"INV-{today_tag}-{random_suffix}"
 
-                # Insert BILL record
-                out_bill_id = cursor.var(oracledb.NUMBER)
+                # Insert BILL record — PostgreSQL RETURNING clause
                 cursor.execute(
                     """
                     INSERT INTO BILL (
                         bill_number, patient_id, customer_name, bill_date,
                         subtotal, discount_pct, tax_pct, total_amount, payment_method, created_by
                     ) VALUES (
-                        :bnum, :pid, :cname, CURRENT_TIMESTAMP,
-                        :sub, :disc, :tax, :tot, :pmeth, :created_by_user
-                    ) RETURNING bill_id INTO :out_bid
+                        %(bnum)s, %(pid)s, %(cname)s, CURRENT_TIMESTAMP,
+                        %(sub)s, %(disc)s, %(tax)s, %(tot)s, %(pmeth)s, %(created_by_user)s
+                    ) RETURNING bill_id
                     """,
                     {
                         "bnum": bill_number,
@@ -282,10 +281,9 @@ def new():
                         "tot": total_amount,
                         "pmeth": payment_method,
                         "created_by_user": session.get("user_id"),
-                        "out_bid": out_bill_id
                     }
                 )
-                new_bill_id = int(out_bill_id.getvalue()[0])
+                new_bill_id = cursor.fetchone()["bill_id"]
 
                 # Insert BILL_ITEMS and Deduct Inventory Quantities
                 for c_itm in calculated_items:
@@ -294,7 +292,7 @@ def new():
                         INSERT INTO BILL_ITEMS (
                             bill_id, medicine_id, medicine_name, unit_price, quantity, line_total
                         ) VALUES (
-                            :bid, :mid, :mname, :uprice, :qty, :ltot
+                            %(bid)s, %(mid)s, %(mname)s, %(uprice)s, %(qty)s, %(ltot)s
                         )
                         """,
                         {
@@ -311,8 +309,8 @@ def new():
                     cursor.execute(
                         """
                         UPDATE MEDICINE
-                        SET quantity = quantity - :sold_qty
-                        WHERE medicine_id = :mid
+                        SET quantity = quantity - %(sold_qty)s
+                        WHERE medicine_id = %(mid)s
                         """,
                         {
                             "sold_qty": c_itm["quantity"],

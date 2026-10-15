@@ -63,7 +63,7 @@ def sales():
             transaction_count
         FROM VW_TOP_SELLING_MEDICINES
         ORDER BY total_quantity_sold DESC
-        FETCH FIRST 8 ROWS ONLY
+        LIMIT 8
         """,
         fetchall=True
     )

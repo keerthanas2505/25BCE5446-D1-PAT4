@@ -1,0 +1,232 @@
+-- ============================================================================
+-- HOSPITAL PHARMACY MANAGEMENT SYSTEM (HPMS)
+-- Database: PostgreSQL 15+ / Neon / Supabase
+-- Schema Definition & Constraints Script (schema_postgres.sql)
+-- Safe, Idempotent DDL for PostgreSQL Deployment
+-- ============================================================================
+
+-- Drop views in reverse dependency order
+DROP VIEW IF EXISTS VW_TOP_SELLING_MEDICINES CASCADE;
+DROP VIEW IF EXISTS VW_MONTHLY_SALES_SUMMARY CASCADE;
+DROP VIEW IF EXISTS VW_INVENTORY_STATUS CASCADE;
+
+-- Drop tables in reverse foreign key order
+DROP TABLE IF EXISTS BILL_ITEMS CASCADE;
+DROP TABLE IF EXISTS BILL CASCADE;
+DROP TABLE IF EXISTS PRESCRIPTION_ITEMS CASCADE;
+DROP TABLE IF EXISTS PRESCRIPTION CASCADE;
+DROP TABLE IF EXISTS MEDICINE CASCADE;
+DROP TABLE IF EXISTS PATIENT CASCADE;
+DROP TABLE IF EXISTS SUPPLIER CASCADE;
+DROP TABLE IF EXISTS APP_USERS CASCADE;
+
+-- ----------------------------------------------------------------------------
+-- 1. APP_USERS (Authentication & Role-Based Access Control)
+-- ----------------------------------------------------------------------------
+CREATE TABLE APP_USERS (
+    user_id         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    username        VARCHAR(50) NOT NULL,
+    password_hash   VARCHAR(255) NOT NULL,
+    full_name       VARCHAR(100) NOT NULL,
+    role            VARCHAR(20) DEFAULT 'PHARMACIST' NOT NULL,
+    email           VARCHAR(100),
+    is_active       SMALLINT DEFAULT 1 NOT NULL,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT UQ_APP_USERS_USERNAME UNIQUE (username),
+    CONSTRAINT CHK_APP_USERS_ROLE CHECK (role IN ('ADMIN', 'PHARMACIST')),
+    CONSTRAINT CHK_APP_USERS_ACTIVE CHECK (is_active IN (0, 1))
+);
+
+-- ----------------------------------------------------------------------------
+-- 2. SUPPLIER (Pharmaceutical Suppliers & Distributors)
+-- ----------------------------------------------------------------------------
+CREATE TABLE SUPPLIER (
+    supplier_id     INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    supplier_name   VARCHAR(100) NOT NULL,
+    contact_person  VARCHAR(100),
+    phone           VARCHAR(25) NOT NULL,
+    email           VARCHAR(100),
+    address         VARCHAR(255),
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT UQ_SUPPLIER_NAME UNIQUE (supplier_name)
+);
+
+-- ----------------------------------------------------------------------------
+-- 3. MEDICINE (Drug Inventory, Batches, Pricing, Stock & Expiry)
+-- ----------------------------------------------------------------------------
+CREATE TABLE MEDICINE (
+    medicine_id       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    medicine_name     VARCHAR(100) NOT NULL,
+    category          VARCHAR(50) NOT NULL,
+    description       VARCHAR(255),
+    unit_price        NUMERIC(10, 2) NOT NULL,
+    quantity          INTEGER DEFAULT 0 NOT NULL,
+    reorder_threshold INTEGER DEFAULT 15 NOT NULL,
+    batch_number      VARCHAR(50) NOT NULL,
+    expiry_date       DATE NOT NULL,
+    supplier_id       INTEGER NOT NULL,
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT FK_MEDICINE_SUPPLIER FOREIGN KEY (supplier_id)
+        REFERENCES SUPPLIER (supplier_id),
+    CONSTRAINT CHK_MEDICINE_PRICE CHECK (unit_price >= 0),
+    CONSTRAINT CHK_MEDICINE_QTY CHECK (quantity >= 0),
+    CONSTRAINT CHK_MEDICINE_THRESHOLD CHECK (reorder_threshold >= 0),
+    CONSTRAINT UQ_MED_BATCH UNIQUE (medicine_name, batch_number)
+);
+
+-- ----------------------------------------------------------------------------
+-- 4. PATIENT (Registered Hospital Patients)
+-- ----------------------------------------------------------------------------
+CREATE TABLE PATIENT (
+    patient_id      INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    age             SMALLINT NOT NULL,
+    gender          VARCHAR(10) NOT NULL,
+    phone           VARCHAR(25) NOT NULL,
+    address         VARCHAR(255),
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT CHK_PATIENT_AGE CHECK (age >= 0 AND age <= 130),
+    CONSTRAINT CHK_PATIENT_GENDER CHECK (gender IN ('Male', 'Female', 'Other'))
+);
+
+-- ----------------------------------------------------------------------------
+-- 5. PRESCRIPTION (Clinical Prescriptions linked to Patients & Doctors)
+-- ----------------------------------------------------------------------------
+CREATE TABLE PRESCRIPTION (
+    prescription_id   INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    patient_id        INTEGER NOT NULL,
+    doctor_name       VARCHAR(100) NOT NULL,
+    diagnosis         VARCHAR(255),
+    prescription_date DATE DEFAULT CURRENT_DATE NOT NULL,
+    notes             VARCHAR(500),
+    created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT FK_PRESCRIPTION_PATIENT FOREIGN KEY (patient_id)
+        REFERENCES PATIENT (patient_id)
+);
+
+-- ----------------------------------------------------------------------------
+-- 6. PRESCRIPTION_ITEMS (Prescribed Drugs, Dosages & Quantities)
+-- ----------------------------------------------------------------------------
+CREATE TABLE PRESCRIPTION_ITEMS (
+    item_id           INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    prescription_id   INTEGER NOT NULL,
+    medicine_id       INTEGER NOT NULL,
+    dosage            VARCHAR(100) NOT NULL,
+    quantity          INTEGER NOT NULL,
+    CONSTRAINT FK_PITEMS_PRESCRIPTION FOREIGN KEY (prescription_id)
+        REFERENCES PRESCRIPTION (prescription_id) ON DELETE CASCADE,
+    CONSTRAINT FK_PITEMS_MEDICINE FOREIGN KEY (medicine_id)
+        REFERENCES MEDICINE (medicine_id),
+    CONSTRAINT CHK_PITEMS_QTY CHECK (quantity > 0)
+);
+
+-- ----------------------------------------------------------------------------
+-- 7. BILL (Sales & Billing Invoices)
+-- ----------------------------------------------------------------------------
+CREATE TABLE BILL (
+    bill_id         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bill_number     VARCHAR(50) NOT NULL,
+    patient_id      INTEGER,
+    customer_name   VARCHAR(100) NOT NULL,
+    bill_date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    subtotal        NUMERIC(10, 2) NOT NULL,
+    discount_pct    NUMERIC(5, 2) DEFAULT 0.00 NOT NULL,
+    tax_pct         NUMERIC(5, 2) DEFAULT 0.00 NOT NULL,
+    total_amount    NUMERIC(10, 2) NOT NULL,
+    payment_method  VARCHAR(20) DEFAULT 'CASH' NOT NULL,
+    created_by      INTEGER,
+    CONSTRAINT UQ_BILL_NUMBER UNIQUE (bill_number),
+    CONSTRAINT FK_BILL_PATIENT FOREIGN KEY (patient_id) 
+        REFERENCES PATIENT (patient_id),
+    CONSTRAINT FK_BILL_USER FOREIGN KEY (created_by) 
+        REFERENCES APP_USERS (user_id),
+    CONSTRAINT CHK_BILL_SUBTOTAL CHECK (subtotal >= 0),
+    CONSTRAINT CHK_BILL_DISCOUNT CHECK (discount_pct >= 0 AND discount_pct <= 100),
+    CONSTRAINT CHK_BILL_TAX CHECK (tax_pct >= 0 AND tax_pct <= 100),
+    CONSTRAINT CHK_BILL_TOTAL CHECK (total_amount >= 0),
+    CONSTRAINT CHK_BILL_PAYMENT CHECK (payment_method IN ('CASH', 'CARD', 'UPI'))
+);
+
+-- ----------------------------------------------------------------------------
+-- 8. BILL_ITEMS (Individual Medicine Line Items Preserving Historical Price)
+-- ----------------------------------------------------------------------------
+CREATE TABLE BILL_ITEMS (
+    bill_item_id    INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    bill_id         INTEGER NOT NULL,
+    medicine_id     INTEGER NOT NULL,
+    medicine_name   VARCHAR(100) NOT NULL,
+    unit_price      NUMERIC(10, 2) NOT NULL,
+    quantity        INTEGER NOT NULL,
+    line_total      NUMERIC(10, 2) NOT NULL,
+    CONSTRAINT FK_BITMES_BILL FOREIGN KEY (bill_id) 
+        REFERENCES BILL (bill_id) ON DELETE CASCADE,
+    CONSTRAINT FK_BITMES_MEDICINE FOREIGN KEY (medicine_id) 
+        REFERENCES MEDICINE (medicine_id),
+    CONSTRAINT CHK_BITMES_QTY CHECK (quantity > 0),
+    CONSTRAINT CHK_BITMES_PRICE CHECK (unit_price >= 0),
+    CONSTRAINT CHK_BITMES_TOTAL CHECK (line_total >= 0)
+);
+
+-- ============================================================================
+-- PERFORMANCE & INTEGRITY INDEXES
+-- ============================================================================
+CREATE INDEX IF NOT EXISTS IDX_MED_SUPPLIER ON MEDICINE(supplier_id);
+CREATE INDEX IF NOT EXISTS IDX_MED_EXPIRY ON MEDICINE(expiry_date);
+CREATE INDEX IF NOT EXISTS IDX_MED_QTY ON MEDICINE(quantity);
+CREATE INDEX IF NOT EXISTS IDX_PRES_PATIENT ON PRESCRIPTION(patient_id);
+CREATE INDEX IF NOT EXISTS IDX_BILL_PATIENT ON BILL(patient_id);
+CREATE INDEX IF NOT EXISTS IDX_BILL_DATE ON BILL(bill_date);
+CREATE INDEX IF NOT EXISTS IDX_BITMES_BILL ON BILL_ITEMS(bill_id);
+CREATE INDEX IF NOT EXISTS IDX_BITMES_MED ON BILL_ITEMS(medicine_id);
+
+-- ============================================================================
+-- BUSINESS VIEWS
+-- ============================================================================
+-- View 1: Inventory Health View with calculated status & days to expiry
+CREATE OR REPLACE VIEW VW_INVENTORY_STATUS AS
+SELECT 
+    m.medicine_id,
+    m.medicine_name,
+    m.category,
+    m.batch_number,
+    m.quantity,
+    m.reorder_threshold,
+    m.unit_price,
+    m.expiry_date,
+    (m.expiry_date - CURRENT_DATE) AS days_to_expiry,
+    CASE 
+        WHEN m.quantity = 0 THEN 'OUT OF STOCK'
+        WHEN m.quantity <= m.reorder_threshold THEN 'LOW STOCK'
+        ELSE 'ADEQUATE'
+    END AS stock_status,
+    CASE 
+        WHEN m.expiry_date < CURRENT_DATE THEN 'EXPIRED'
+        WHEN m.expiry_date <= CURRENT_DATE + 60 THEN 'EXPIRING SOON'
+        ELSE 'VALID'
+    END AS expiry_status,
+    s.supplier_id,
+    s.supplier_name,
+    s.phone AS supplier_phone
+FROM MEDICINE m
+JOIN SUPPLIER s ON m.supplier_id = s.supplier_id;
+
+-- View 2: Sales Monthly Performance View
+CREATE OR REPLACE VIEW VW_MONTHLY_SALES_SUMMARY AS
+SELECT 
+    TO_CHAR(bill_date, 'YYYY-MM') AS sale_month,
+    COUNT(bill_id) AS total_bills,
+    COALESCE(SUM(total_amount), 0) AS gross_revenue,
+    COALESCE(AVG(total_amount), 0) AS avg_bill_value
+FROM BILL
+GROUP BY TO_CHAR(bill_date, 'YYYY-MM');
+
+-- View 3: Top Selling Medicines Leaderboard
+CREATE OR REPLACE VIEW VW_TOP_SELLING_MEDICINES AS
+SELECT 
+    bi.medicine_id,
+    bi.medicine_name,
+    COALESCE(SUM(bi.quantity), 0) AS total_quantity_sold,
+    COALESCE(SUM(bi.line_total), 0) AS total_revenue_generated,
+    COUNT(DISTINCT bi.bill_id) AS transaction_count
+FROM BILL_ITEMS bi
+GROUP BY bi.medicine_id, bi.medicine_name;
