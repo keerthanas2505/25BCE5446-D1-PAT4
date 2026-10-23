@@ -10,6 +10,7 @@
 1. **Public Visitors & Patients:** A welcoming public homepage (`/`), searchable hospital formulary catalog (`/medicines/catalog`), prescription status tracker (`/patient/lookup`), medication safety guide (`/prescriptions/guide`), clinical services directory (`/services`), institutional background (`/about`), and counter directory (`/contact`).
 2. **Clinical Pharmacists:** A secure workspace (`/dashboard`) with real-time inventory management, stock alerts, patient profiles, multi-item atomic billing with pessimistic row locking (`SELECT ... FOR UPDATE`), and expiration monitoring.
 3. **Hospital Administrators:** Privileged controls including staff account provisioning (`/users`), system-wide sales intelligence, inventory valuation, and database audit logs.
+4. **Sample Staff Login Credentials:** Staff ID: keerthana_admin, Password: 25m@2008 
 
 Every feature interacts directly with an **Oracle Database XE 21c pluggable database (`XEPDB1`)** via parameterized queries using the official `python-oracledb` driver. No SQLite, mock data, or fake database substitutes are used.
 
